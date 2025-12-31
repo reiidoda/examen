@@ -35,13 +35,17 @@ Docs/examen.png
 ## Local Development (without Docker)
 Requirements: JDK 25+, Node 20+/npm 11, PostgreSQL 15.
 
-1) Start PostgreSQL (local or `docker compose up postgres`). Example env:
+1) Start PostgreSQL (local or `docker compose up postgres`). Create a local `.env.local` (kept out of git) with your own credentials:
 ```
-SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/examen
-SPRING_DATASOURCE_USERNAME=postgres
-SPRING_DATASOURCE_PASSWORD=postgres
-APP_JWT_SECRET=change-me-change-me-change-me-change
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/<your_db_name>
+SPRING_DATASOURCE_USERNAME=<your_db_user>
+SPRING_DATASOURCE_PASSWORD=<your_db_password>
+APP_JWT_SECRET=<long-random-secret>
+POSTGRES_USER=<your_db_user>
+POSTGRES_PASSWORD=<your_db_password>
+POSTGRES_DB=<your_db_name>
 ```
+Use strong, unique values and do not commit this file; Docker Compose will fall back to its own defaults if these vars are unset.
 
 2) Backend
 ```
@@ -81,11 +85,11 @@ Place `fullchain.pem` and `privkey.pem` under `deploy/certs/` for HTTPS terminat
 ### Environment Variables
 | Name | Description | Default |
 |------|-------------|---------|
-| POSTGRES_USER | PostgreSQL user | postgres |
-| POSTGRES_PASSWORD | PostgreSQL password | postgres |
-| POSTGRES_DB | PostgreSQL database | examen |
-| SPRING_DATASOURCE_URL | JDBC URL (override for local dev) | jdbc:postgresql://postgres:5432/examen |
-| APP_JWT_SECRET | JWT signing secret (HS256) | change-me-change-me-change-me-change |
+| POSTGRES_USER | PostgreSQL user | set in local env/.env (no secret in repo) |
+| POSTGRES_PASSWORD | PostgreSQL password | set in local env/.env (no secret in repo) |
+| POSTGRES_DB | PostgreSQL database | set in local env/.env (no secret in repo) |
+| SPRING_DATASOURCE_URL | JDBC URL (override for local dev) | defaults to `jdbc:postgresql://postgres:5432/${POSTGRES_DB}` when using Compose |
+| APP_JWT_SECRET | JWT signing secret (HS256) | required; set a long random value locally |
 | API_URL | Frontend SSR API base (used by Node server) | http://backend:8080/api |
 
 ## APIs
