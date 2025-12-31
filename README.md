@@ -45,7 +45,7 @@ POSTGRES_USER=<your_db_user>
 POSTGRES_PASSWORD=<your_db_password>
 POSTGRES_DB=<your_db_name>
 ```
-Use strong, unique values and do not commit this file; Docker Compose will fall back to its own defaults if these vars are unset.
+Keep this file out of git; Docker Compose will fall back to the defaults in `docker-compose*.yml` if these variables are unset.
 
 2) Backend
 ```
@@ -83,14 +83,18 @@ docker compose -f docker-compose.prod.yml up --build
 Place `fullchain.pem` and `privkey.pem` under `deploy/certs/` for HTTPS termination. nginx forwards `/api` to the backend and everything else to the SSR frontend.
 
 ### Environment Variables
-| Name | Description | Default |
-|------|-------------|---------|
-| POSTGRES_USER | PostgreSQL user | set in local env/.env (no secret in repo) |
-| POSTGRES_PASSWORD | PostgreSQL password | set in local env/.env (no secret in repo) |
-| POSTGRES_DB | PostgreSQL database | set in local env/.env (no secret in repo) |
-| SPRING_DATASOURCE_URL | JDBC URL (override for local dev) | defaults to `jdbc:postgresql://postgres:5432/${POSTGRES_DB}` when using Compose |
-| APP_JWT_SECRET | JWT signing secret (HS256) | required; set a long random value locally |
+Define these in your private `.env.local` (git-ignored). Replace the placeholders with your own values:
+
+| Name | Description | Example (do not commit) |
+|------|-------------|-------------------------|
+| POSTGRES_USER | PostgreSQL username used by both Postgres and Spring | <your_db_user> |
+| POSTGRES_PASSWORD | PostgreSQL password | <your_db_password> |
+| POSTGRES_DB | PostgreSQL database name | <your_db_name> |
+| SPRING_DATASOURCE_URL | JDBC URL for local dev (overrides defaults) | jdbc:postgresql://localhost:5432/<your_db_name> |
+| APP_JWT_SECRET | JWT signing secret (HS256) | <your_jwt_secret> |
 | API_URL | Frontend SSR API base (used by Node server) | http://backend:8080/api |
+
+When running Docker Compose, leaving `POSTGRES_*` unset uses the compose defaults (`postgres` / `postgres` / `examen`); override them in `.env.local` for your own deployments.
 
 ## APIs
 - Auth: `/api/auth/login`, `/api/auth/register`, `/api/auth/reset/*`
