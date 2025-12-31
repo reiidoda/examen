@@ -1,0 +1,54 @@
+<div class="section-stack" *ngIf="settings">
+  <div class="page-header">
+    <div>
+      <p class="overline">Settings</p>
+      <h1>Your preferences</h1>
+      <p class="muted small">Time zone, reminders, and theme.</p>
+    </div>
+  </div>
+
+  <div class="card form-grid">
+    <div class="form-field">
+      <label for="tz">Time zone</label>
+      <select id="tz" [(ngModel)]="settings.timeZone">
+        <option *ngFor="let tz of timezones" [value]="tz">{{ tz }}</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="reminder">Reminder time (HH:mm)</label>
+      <input id="reminder" type="time" [(ngModel)]="settings.reminderTime" />
+    </div>
+    <div class="form-field">
+      <label for="theme">Theme</label>
+      <select id="theme" [(ngModel)]="settings.theme">
+        <option *ngFor="let t of themes" [value]="t">{{ t }}</option>
+      </select>
+    </div>
+    <div class="form-field toggle-field">
+      <label>
+        <input type="checkbox" [(ngModel)]="settings.emailReminder" />
+        Email reminders
+      </label>
+      <p class="muted tiny">Send a daily reminder to your email at the time above.</p>
+    </div>
+    <div class="form-field toggle-field">
+      <label>
+        <input type="checkbox" [(ngModel)]="settings.inAppReminder" />
+        In-app reminders
+      </label>
+      <p class="muted tiny">Show a notification in the app around your reminder time.</p>
+    </div>
+
+    <div class="alert error" *ngIf="error">{{ error }}</div>
+    <div class="form-actions">
+      <button class="btn btn-primary" (click)="save()" [disabled]="loading">
+        {{ loading ? 'Saving…' : 'Save settings' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="empty-state" *ngIf="!settings && !error">
+  Loading settings…
+</div>
+<div class="alert error" *ngIf="error">{{ error }}</div>

@@ -1,0 +1,30 @@
+.entry-list {
+  display: grid;
+  gap: 12px;
+}
+
+.entry {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+}
+
+.entry:last-child {
+  border-bottom: none;
+}
+
+.entry-date {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.entry-content {
+  color: var(--text-muted);
+  margin-top: 4px;
+  white-space: pre-wrap;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}

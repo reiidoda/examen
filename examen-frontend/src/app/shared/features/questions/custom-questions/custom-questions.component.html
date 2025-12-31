@@ -1,0 +1,73 @@
+<div class="section-stack">
+  <div class="page-header">
+    <div>
+      <p class="overline">Questions</p>
+      <h1>Your custom questions</h1>
+      <p class="muted small">Add personal prompts that appear in your examinations.</p>
+      <p class="muted tiny">Note: At least {{ minRequired }} questions must remain. The 5 default questions cannot be deleted.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <form class="form-grid" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="form-field">
+        <label for="text">Question</label>
+        <input id="text" formControlName="text" placeholder="What lifted your energy today?" />
+      </div>
+
+      <div class="form-field">
+        <label for="category">Category</label>
+        <select id="category" formControlName="categoryId">
+          <option [ngValue]="null" disabled>Select a category</option>
+          <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label for="type">Response type</label>
+        <select id="type" formControlName="responseType">
+          <option *ngFor="let type of responseTypes" [value]="type.value">
+            {{ type.label }}
+          </option>
+        </select>
+      </div>
+
+      <div class="alert error" *ngIf="error">{{ error }}</div>
+
+      <div class="form-actions">
+        <button class="btn btn-primary" type="submit" [disabled]="loading">
+          {{ loading ? 'Saving…' : 'Add question' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card table-card" *ngIf="questions.length">
+    <table>
+      <thead>
+      <tr>
+        <th>Question</th>
+        <th>Category</th>
+        <th>Type</th>
+        <th>Default?</th>
+        <th style="width: 80px;"></th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let q of questions">
+        <td>{{ q.text }}</td>
+        <td>{{ q.category ? q.category.name : q.categoryId }}</td>
+        <td>{{ q.responseType === 'YES_NO' ? 'Yes/No' : 'Scale 1-5' }}</td>
+        <td>{{ q.custom ? 'No' : 'Yes' }}</td>
+        <td class="actions">
+          <button class="btn btn-ghost" (click)="delete(q)" [disabled]="questions.length <= minRequired || !q.custom">Delete</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="empty-state" *ngIf="!questions.length">
+    You have no custom questions yet. Add your first one above.
+  </div>
+</div>

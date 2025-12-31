@@ -1,0 +1,131 @@
+<div class="exam-page">
+  <header class="hero card">
+    <div>
+      <p class="overline">Examination of Conscience</p>
+      <h1>Reflect, rate, and place</h1>
+      <p class="subtitle">Write a concise reflection, choose a 1–5 rating, generate a token, then drop it onto each question card.</p>
+      <div class="micro-guides">
+        <div class="guide"><strong>1.</strong><p>Write & select a rating.</p></div>
+        <div class="guide"><strong>2.</strong><p>Generate the answer token.</p></div>
+        <div class="guide"><strong>3.</strong><p>Drag & drop onto a question.</p></div>
+      </div>
+      <div class="progress">
+        <div class="progress-label">
+          <span>{{ answeredCount }} / {{ totalQuestions || '–' }} completed</span>
+          <span class="muted tiny">Progress</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" [style.width.%]="progressPercent"></div></div>
+        <div class="progress-hint" *ngIf="submitEnabled">All questions completed ✓</div>
+      </div>
+      <button class="btn btn-ghost small" type="button" (click)="scrollToNextUnanswered()" *ngIf="unansweredQuestionId">Jump to next incomplete</button>
+    </div>
+    <div class="hero-actions">
+      <div class="session-status" [class.active]="activeSession">
+        <div class="dot"></div>
+        {{ activeSession ? 'Session in progress' : 'No active session' }}
+      </div>
+      <p class="muted small">Submit is enabled only after every question is completed.</p>
+      <button class="btn btn-primary" (click)="submit()" [disabled]="!submitEnabled || cooldownMessage">Submit Exam</button>
+    </div>
+  </header>
+
+  <div class="alert error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="alert success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="alert warn" *ngIf="cooldownMessage">{{ cooldownMessage }}</div>
+  <div *ngIf="loading" class="loading">Loading questions…</div>
+  <div *ngIf="!loading && questions.length === 0" class="empty-state">No questions available yet.</div>
+  <div class="skeletons" *ngIf="loading">
+    <div class="skeleton-card" *ngFor="let s of [1,2,3]">
+      <div class="skeleton-line wide"></div>
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line short"></div>
+    </div>
+  </div>
+
+  <section class="question-grid" *ngIf="!loading">
+    <article class="question-card"
+             *ngFor="let question of questions"
+             [attr.id]="'question-' + question.id"
+             [class.completed]="question.status === 'completed'"
+             [class.hovered]="ui.hoveredQuestionId === question.id"
+             (dragover)="allowDrop($event)"
+             (dragenter)="handleDragEnter(question.id)"
+             (dragleave)="handleDragLeave()"
+             (drop)="handleDrop($event, question.id)">
+      <div class="card-head">
+        <div>
+          <p class="overline">Question {{ question.title.split(' ')[1] }}</p>
+          <h3>{{ question.text }}</h3>
+          <p class="muted tiny instruction">{{ question.instruction }}</p>
+        </div>
+        <div class="status-chip" [class.done]="question.status === 'completed'">
+          <span class="dot"></span>{{ question.status === 'completed' ? 'Completed' : 'Incomplete' }}
+        </div>
+      </div>
+      <div class="drop-zone"
+           [attr.aria-label]="'Drop answer for ' + question.title"
+           tabindex="0"
+           (keydown.enter)="placeTokenKeyboard(question.id)"
+           (keydown.space)="placeTokenKeyboard(question.id)">
+        <ng-container *ngIf="question.answer; else awaiting">
+          <div class="placed-answer">
+            <div class="answer-text">{{ question.answer.text }}</div>
+            <div class="rating-pill">Rating {{ question.answer.rating }}</div>
+            <div class="placed-meta">Placed {{ question.answer.placedAt | date:'shortTime' }}</div>
+          </div>
+        </ng-container>
+        <ng-template #awaiting>
+          <div class="awaiting">Drop to assign</div>
+          <button class="btn btn-ghost tiny" type="button" (click)="placeTokenKeyboard(question.id)" [disabled]="!activeToken">Place here</button>
+        </ng-template>
+      </div>
+    </article>
+  </section>
+
+  <section class="composer-dock" aria-label="Answer composer">
+    <div class="composer-inner">
+      <div class="composer-left">
+        <label class="muted tiny">Your reflection</label>
+        <textarea rows="3"
+                  [(ngModel)]="composer.draftText"
+                  placeholder="Write a concise reflection (min 3 chars)"></textarea>
+      </div>
+      <div class="composer-center">
+        <label class="muted tiny">Rating 1–5</label>
+        <div class="rating-picker" role="radiogroup" aria-label="Select rating">
+          <button *ngFor="let r of [1,2,3,4,5]"
+                  type="button"
+                  [class.selected]="composer.draftRating === r"
+                  (click)="selectRating(r)"
+                  [attr.aria-checked]="composer.draftRating === r"
+                  role="radio">
+            <span class="ripple"></span>
+            {{ r }}
+          </button>
+        </div>
+        <p class="muted tiny">Hover or focus to preview, click to select. Use Tab + Enter for keyboard.</p>
+      </div>
+      <div class="composer-right">
+        <button class="btn btn-primary"
+                type="button"
+                (click)="generateToken()"
+                [disabled]="activeToken !== null">
+          Generate Answer Token
+        </button>
+        <p class="muted tiny">Token must be placed on a question.</p>
+        <div class="floating-token"
+             *ngIf="activeToken"
+             draggable="true"
+             (dragstart)="handleDragStart($event)"
+             (dragend)="handleDragEnd()"
+             aria-label="Draggable answer token">
+          <div class="token-rating">Rating {{ activeToken.rating }}</div>
+          <div class="token-text">{{ activeToken.text }}</div>
+          <div class="token-meta">Drag to a question</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="autosave" *ngIf="showAutosave">Saved progress</div>
+</div>

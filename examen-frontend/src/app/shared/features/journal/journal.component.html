@@ -1,0 +1,39 @@
+<div class="section-stack">
+  <div class="page-header">
+    <div>
+      <p class="overline">Journal</p>
+      <h1>Capture your reflections</h1>
+      <p class="muted small">Quick notes for the day. Autosaves the latest 20 entries.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <label for="entry">New entry</label>
+    <textarea
+      id="entry"
+      [(ngModel)]="content"
+      rows="4"
+      placeholder="What did you learn or feel today?"
+    ></textarea>
+    <div class="alert error" *ngIf="error">{{ error }}</div>
+    <div class="form-actions">
+      <button class="btn btn-primary" (click)="save()" [disabled]="loading">
+        {{ loading ? 'Saving…' : 'Save entry' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="card" *ngIf="entries.length">
+    <p class="overline">Recent entries</p>
+    <div class="entry-list">
+      <div class="entry" *ngFor="let e of entries">
+        <div class="entry-date">{{ e.createdAt | date:'medium' }}</div>
+        <div class="entry-content">{{ e.content }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!entries.length">
+    No journal entries yet. Start by writing a quick reflection above.
+  </div>
+</div>

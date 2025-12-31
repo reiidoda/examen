@@ -1,0 +1,40 @@
+.auth-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 32px;
+  align-items: center;
+  padding: 24px 0;
+}
+
+.auth-hero h1 {
+  margin: 10px 0 8px;
+  font-size: clamp(26px, 3vw, 34px);
+}
+
+.auth-card {
+  padding: 24px;
+}
+
+.auth-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.overline {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0 0 4px;
+}
+
+.small {
+  font-size: 14px;
+}
+
+.helper {
+  margin: 10px 0 0;
+}

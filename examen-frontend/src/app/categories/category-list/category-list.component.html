@@ -1,0 +1,39 @@
+<div class="section-stack">
+  <div class="page-header">
+    <div>
+      <p class="overline">Categories</p>
+      <h1>Organize your reflections</h1>
+      <p class="muted small">Group questions by themes to keep sessions focused.</p>
+    </div>
+    <button class="btn btn-primary" (click)="onCreate()">New category</button>
+  </div>
+
+  <div class="alert error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="alert" *ngIf="loading">Loading categories…</div>
+
+  <div class="card table-card" *ngIf="categories.length">
+    <table>
+      <thead>
+      <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th style="width: 140px;">Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let c of categories">
+        <td>{{ c.name }}</td>
+        <td class="muted">{{ c.description || '—' }}</td>
+        <td class="actions">
+          <button class="btn btn-ghost" (click)="onEdit(c)">Edit</button>
+          <button class="btn btn-ghost" (click)="onDelete(c)">Delete</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="empty-state" *ngIf="!categories.length && !loading">
+    No categories yet. Create your first one to start grouping questions.
+  </div>
+</div>

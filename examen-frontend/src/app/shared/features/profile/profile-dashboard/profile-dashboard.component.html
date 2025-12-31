@@ -1,0 +1,168 @@
+<div class="section-stack">
+  <div class="page-header">
+    <div>
+      <p class="overline">Profile</p>
+      <h1>Your last 30 days</h1>
+      <p class="muted small">A quick snapshot of what you’ve shipped and reflected on.</p>
+    </div>
+    <span class="pill">Insight mode</span>
+  </div>
+
+  <div class="alert" *ngIf="loading">Loading your summary…</div>
+
+  <div *ngIf="summary" class="stat-grid">
+    <div class="stat-card card">
+      <p class="muted small">Examinations completed</p>
+      <div class="stat-value">{{ summary.examinationsCompleted }}</div>
+      <p class="muted tiny">Consistent reflection builds clarity.</p>
+    </div>
+    <div class="stat-card card">
+      <p class="muted small">Todos completed</p>
+      <div class="stat-value">{{ summary.todosCompleted }}</div>
+      <p class="muted tiny">Checked-off tasks in the last month.</p>
+    </div>
+    <div class="stat-card card">
+      <p class="muted small">Categories used</p>
+      <div class="stat-value">{{ summary.categoriesUsed }}</div>
+      <p class="muted tiny">Active themes keeping you organized.</p>
+    </div>
+    <div class="stat-card card">
+      <p class="muted small">Streak</p>
+      <div class="stat-value">{{ summary.streakDays }} days</div>
+      <p class="muted tiny">Daily momentum you’ve kept alive.</p>
+    </div>
+    <div class="stat-card card">
+      <p class="muted small">Avg mood (30d)</p>
+      <div class="stat-value">
+        {{ summary.averageMoodLast30Days != null ? (summary.averageMoodLast30Days | number:'1.1-1') : '—' }}
+      </div>
+      <p class="muted tiny">Self-rated mood over last month.</p>
+    </div>
+    <div class="stat-card card">
+      <p class="muted small">Sessions this week</p>
+      <div class="stat-value">{{ summary.sessionsThisWeek || 0 }}</div>
+      <p class="muted tiny">Completed in the last 7 days.</p>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && !summary">
+    No summary yet. Complete an examination session to see your metrics.
+  </div>
+
+  <div class="card" *ngIf="sessions.length">
+    <p class="overline">Recent sessions</p>
+    <div class="recent-list">
+      <div class="recent-item" *ngFor="let s of sessions">
+        <div>
+          <div class="recent-date">{{ s.completedAt || s.startedAt | date:'medium' }}</div>
+          <div class="muted small" *ngIf="s.notes">{{ s.notes }}</div>
+        </div>
+        <div class="tag" [ngClass]="s.score ? 'tag-success' : 'tag-muted'">
+          {{ s.score ? (s.score | number:'1.0-0') + '%' : 'No score' }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" *ngIf="summary">
+    <div class="today-header">
+      <div>
+        <p class="overline">Today</p>
+        <h2>{{ summary.todayCompleted ? 'Completed' : 'Not completed yet' }}</h2>
+        <p class="muted small">
+          {{ summary.todayMood ? ('Mood ' + summary.todayMood + '/5') : 'No mood logged yet' }}
+        </p>
+      </div>
+      <div class="today-actions">
+        <span class="pill">{{ summary.sessionsThisWeek || 0 }} this week</span>
+        <button class="btn btn-primary" routerLink="/examination">Start today</button>
+      </div>
+    </div>
+
+    <div class="mood-trend" *ngIf="summary.recentMoodTrend?.length">
+      <p class="overline">Mood trend (last 14 days)</p>
+      <div class="trend-bars">
+        <div class="trend-bar" *ngFor="let point of summary.recentMoodTrend">
+          <div class="bar" [style.height.%]="(point.mood || 0) * 20"></div>
+          <span class="muted tiny">{{ point.date | date:'MM/dd' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" *ngIf="progress.length">
+    <p class="overline">Completion trend (14 days)</p>
+    <div class="trend-bars">
+      <div class="trend-bar" *ngFor="let point of progress">
+        <div class="bar" [class.completed]="point.completed" [style.height.%]="(point.mood || (point.completed ? 3 : 0)) * 20"></div>
+        <span class="muted tiny">{{ point.date | date:'MM/dd' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" *ngIf="analytics">
+    <p class="overline">Insights (last 30 days)</p>
+    <div class="insight-grid">
+      <div>
+        <p class="muted tiny">Overall score</p>
+        <div class="stat-value">
+          {{ analytics.overallAverageScore != null ? (analytics.overallAverageScore | number:'1.0-0') + '%' : '—' }}
+        </div>
+      </div>
+      <div>
+        <p class="muted tiny">Average mood</p>
+        <div class="stat-value">
+          {{ analytics.overallMood != null ? (analytics.overallMood | number:'1.1-1') : '—' }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" *ngIf="analytics?.categories?.length">
+    <p class="overline">Category breakdown</p>
+    <div class="category-list">
+      <div class="category-row" *ngFor="let c of analytics?.categories || []">
+        <div class="category-meta">
+          <div class="category-name">{{ c.categoryName }}</div>
+          <div class="muted tiny">{{ c.answers }} answers</div>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" [style.width.%]="c.averageScore || 0"></div>
+        </div>
+        <div class="muted tiny score-text">
+          {{ c.averageScore != null ? (c.averageScore | number:'1.0-0') + '%' : '—' }} •
+          Yes: {{ c.yesRate != null ? (c.yesRate | number:'1.0-0') + '%' : '—' }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" *ngIf="analytics?.weeklyTrend?.length">
+    <p class="overline">Weekly trend</p>
+    <div class="trend-bars">
+      <div class="trend-bar" *ngFor="let w of analytics?.weeklyTrend || []">
+        <div class="bar completed" [style.height.%]="(w.sessions || 0) * 15"></div>
+        <span class="muted tiny">{{ w.weekStart | date:'MM/dd' }}</span>
+        <span class="muted tiny">Mood {{ w.averageMood != null ? (w.averageMood | number:'1.1-1') : '—' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" *ngIf="weekly || monthly">
+    <p class="overline">Period summaries</p>
+    <div class="period-grid">
+      <div class="period-card" *ngIf="weekly">
+        <p class="muted small">This week</p>
+        <div class="stat-value">{{ weekly.sessions }}</div>
+        <p class="muted tiny">Sessions • {{ weekly.completedDays }} days</p>
+        <p class="muted tiny">Avg mood: {{ weekly.averageMood != null ? (weekly.averageMood | number:'1.1-1') : '—' }}</p>
+      </div>
+      <div class="period-card" *ngIf="monthly">
+        <p class="muted small">This month</p>
+        <div class="stat-value">{{ monthly.sessions }}</div>
+        <p class="muted tiny">Sessions • {{ monthly.completedDays }} days</p>
+        <p class="muted tiny">Avg mood: {{ monthly.averageMood != null ? (monthly.averageMood | number:'1.1-1') : '—' }}</p>
+      </div>
+    </div>
+  </div>
+</div>

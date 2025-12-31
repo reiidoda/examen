@@ -1,0 +1,53 @@
+<section class="auth-layout">
+  <div class="auth-hero">
+    <p class="pill">Welcome back</p>
+    <h1>Daily focus, distilled into one calm workspace.</h1>
+    <p class="muted">
+      Sign in to continue your self-examination, keep todos in sync, and stay accountable.
+    </p>
+    <div class="chip-row">
+      <span class="pill">Guided check-ins</span>
+      <span class="pill">Lightweight tasks</span>
+      <span class="pill">Progress insights</span>
+    </div>
+  </div>
+
+  <div class="auth-card card">
+    <div class="auth-header">
+      <div>
+        <p class="overline">Sign in</p>
+        <h2>Welcome to Examen</h2>
+        <p class="muted small">Use your account credentials to continue.</p>
+      </div>
+      <a routerLink="/auth/register" class="btn btn-ghost">Create account</a>
+    </div>
+
+    <form class="form-grid" [formGroup]="loginForm" (ngSubmit)="login()">
+      <div class="form-field">
+        <label for="email">Email</label>
+        <input id="email" type="email" placeholder="you@example.com" formControlName="email" />
+        <div class="alert error" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+          Please enter a valid email.
+        </div>
+      </div>
+      <div class="form-field">
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="••••••••" formControlName="password" />
+        <div class="alert error" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+          Password is required.
+        </div>
+      </div>
+
+      <div class="alert error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+      <button class="btn btn-primary" type="submit" [disabled]="loading || loginForm.invalid">
+        {{ loading ? 'Signing in…' : 'Sign in' }}
+      </button>
+    </form>
+
+    <p class="muted small helper">
+      No account yet?
+      <a routerLink="/auth/register">Create one here</a>.
+    </p>
+  </div>
+</section>

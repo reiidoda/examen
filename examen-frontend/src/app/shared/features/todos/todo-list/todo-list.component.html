@@ -1,0 +1,54 @@
+<div class="section-stack">
+  <div class="page-header">
+    <div>
+      <p class="overline">Todos</p>
+      <h1>Today’s priorities</h1>
+      <p class="muted small">Keep your focus items close to your daily examen.</p>
+    </div>
+    <span class="pill">{{ todos.length }} items</span>
+  </div>
+
+  <div class="card composer">
+    <div>
+      <label class="muted tiny">Title</label>
+      <input type="text" [(ngModel)]="draftTitle" placeholder="Add a todo" />
+    </div>
+    <div>
+      <label class="muted tiny">Due at</label>
+      <input type="datetime-local" [(ngModel)]="draftDueAt" />
+    </div>
+    <button class="btn btn-primary" type="button" (click)="create()">Add</button>
+  </div>
+
+  <div class="alert error" *ngIf="error">{{ error }}</div>
+  <div class="filters">
+    <label class="muted tiny">Filter by due</label>
+    <select [(ngModel)]="filterRange">
+      <option value="all">All</option>
+      <option value="hour">Next hour</option>
+      <option value="day">Today</option>
+      <option value="month">This month</option>
+    </select>
+  </div>
+  <div class="alert" *ngIf="loading">Loading todos…</div>
+
+  <div class="card todo-list" *ngIf="filteredTodos.length">
+    <div class="todo-item" *ngFor="let todo of filteredTodos" (click)="toggleDone(todo)" [class.done]="todo.completed">
+      <div class="check" [class.done]="todo.completed">
+        <span *ngIf="todo.completed">&#10003;</span>
+      </div>
+      <div class="todo-content">
+        <div class="title" [class.done]="todo.completed">{{ todo.title }}</div>
+        <div class="muted small">{{ todo.dueAt | date:'medium' }}</div>
+      </div>
+      <div class="tag" [ngClass]="todo.completed ? 'tag-success' : 'tag-muted'">
+        {{ todo.completed ? 'Done' : 'Pending' }}
+      </div>
+      <button class="btn btn-ghost tiny" (click)="remove(todo, $event)">Delete</button>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!filteredTodos.length && !loading">
+    No todos for today. Add a few tasks to stay on track.
+  </div>
+</div>
