@@ -103,11 +103,16 @@ public class ExaminationSessionServiceImpl implements ExaminationSessionService 
                     .examinationSession(session)
                     .build();
 
-        }).toList();
+        }).collect(java.util.stream.Collectors.toList());
 
         answerRepository.saveAll(answerEntities);
 
-        session.setAnswers(answerEntities);
+        if (session.getAnswers() == null) {
+            session.setAnswers(new java.util.ArrayList<>());
+        } else {
+            session.getAnswers().clear();
+        }
+        session.getAnswers().addAll(answerEntities);
         session.setCompletedAt(LocalDateTime.now());
         Integer moodScore = request.getMoodScore();
         if (moodScore == null) {

@@ -1,6 +1,7 @@
 package com.rei.examenbackend.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rei.examenbackend.ExamenApplication;
 import com.rei.examenbackend.dto.answer.AnswerRequest;
 import com.rei.examenbackend.dto.auth.AuthRequest;
 import com.rei.examenbackend.dto.auth.RegisterRequest;
@@ -16,12 +17,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 import java.util.List;
 
@@ -31,8 +35,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = ExamenApplication.class, webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ActiveProfiles("test")
+@Import(SessionLifecycleIntegrationTest.MailTestConfig.class)
 class SessionLifecycleIntegrationTest {
 
     private MockMvc mockMvc;
@@ -49,8 +54,18 @@ class SessionLifecycleIntegrationTest {
     @Autowired
     private QuestionRepository questionRepository;
 
-    @MockBean
-    private JavaMailSender mailSender;
+    @Configuration
+    static class MailTestConfig {
+        @Bean
+        JavaMailSender javaMailSender() {
+            return new JavaMailSenderImpl();
+        }
+
+        @Bean
+        ObjectMapper objectMapper() {
+            return new ObjectMapper().findAndRegisterModules();
+        }
+    }
 
     private String token;
     private Question questionOne;

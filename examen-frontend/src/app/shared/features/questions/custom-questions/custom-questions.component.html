@@ -80,7 +80,7 @@
           <div class="question-row" *ngFor="let q of aiQuestions">
             <div>
               <div class="question-text">{{ q.text }}</div>
-              <div class="muted tiny">{{ q.category?.name || 'Reflection' }} - Reflection + feeling</div>
+              <div class="muted tiny">{{ q.category.name || 'Reflection' }} - Reflection + feeling</div>
             </div>
             <span class="tag tag-muted">AI</span>
           </div>
@@ -93,7 +93,7 @@
           <div class="question-row" *ngFor="let q of customQuestions">
             <div>
               <div class="question-text">{{ q.text }}</div>
-              <div class="muted tiny">{{ q.category?.name || 'Reflection' }} - Reflection + feeling</div>
+              <div class="muted tiny">{{ q.category.name || 'Reflection' }} - Reflection + feeling</div>
             </div>
             <div class="actions">
               <button class="btn btn-ghost tiny" type="button" (click)="startEdit(q)">Edit</button>
