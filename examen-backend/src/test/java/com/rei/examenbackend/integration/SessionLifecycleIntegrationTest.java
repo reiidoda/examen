@@ -16,10 +16,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.List;
 
@@ -47,6 +49,9 @@ class SessionLifecycleIntegrationTest {
     @Autowired
     private QuestionRepository questionRepository;
 
+    @MockBean
+    private JavaMailSender mailSender;
+
     private String token;
     private Question questionOne;
     private Question questionTwo;
@@ -56,7 +61,7 @@ class SessionLifecycleIntegrationTest {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
                 .apply(springSecurity())
                 .build();
-        token = registerAndLogin("test@example.com", "password123!");
+        token = registerAndLogin("test@example.com", "Password123!");
 
         Category category = Category.builder()
                 .name("Reflection")

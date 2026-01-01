@@ -1,33 +1,31 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { of, throwError } from 'rxjs';
-import { Router } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { LoginComponent } from './login.component';
 import { AuthService } from '../../core/services/auth.service';
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
   let authService: { login: ReturnType<typeof vi.fn> };
-  let router: { navigate: ReturnType<typeof vi.fn> };
+  let router: Router;
 
   beforeEach(() => {
     authService = {
       login: vi.fn()
     };
-    router = {
-      navigate: vi.fn()
-    };
-
     TestBed.configureTestingModule({
       imports: [LoginComponent],
       providers: [
         { provide: AuthService, useValue: authService },
-        { provide: Router, useValue: router }
+        provideRouter([])
       ]
     });
 
     const fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
+    router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
     fixture.detectChanges();
   });
 
