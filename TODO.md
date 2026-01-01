@@ -1,6 +1,6 @@
-# TODO - Backlog
+# TODO
 
-## Future ideas (AI + enterprise + emotional + design)
+## Future ideas
 - [ ] AI-calculated profile summary: spiritual and emotional score derived from answers (sentiment, themes, reflection depth) with confidence and evidence snippets.
 - [ ] AI semantic tagging of responses (virtues, struggles, gratitude, stressors) to power filtering and trend views.
 - [ ] AI weekly narrative: highlights, risks, and suggested next steps with opt-in feedback ("useful" or "not useful").

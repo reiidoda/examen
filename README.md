@@ -2,11 +2,25 @@
 
 ![Examen](/Docs/examen.png)
 
-## Overview
-Examen is a daily examination and reflection platform. It combines guided questions, mood tracking,
-custom question libraries, journaling, todos, and profile analytics into one workflow.
+## Product summary
+Examen is a platform for daily examination of conscience and reflective practice. It guides
+users through structured questions, captures answers with mood and feeling scores, and turns that data
+into profile analytics and growth insights. Users can extend the prompt library with custom questions,
+track habits and gratitude, keep a journal, and manage todos alongside the examination workflow.
 
-## Architecture
+The system is delivered as an Angular SSR web app backed by a Spring Boot API and PostgreSQL database,
+with Docker-based tooling for local development and production deployments.
+
+## Key features
+- Authentication and account safety: JWT-based login/register and password reset with email delivery and rate limiting.
+- Examination workflow: 24h cooldown, active session guard, reflection answers + feeling scores, category scoring, daily log.
+- Question library management: default prompt library plus custom user-owned questions and categories.
+- Growth tools: gratitude and habit scoring endpoints, weekly summaries, meditation suggestions, and PDF export.
+- Profile analytics: completion trends, mood/feeling trends, category breakdowns, and summaries.
+- Notifications and reminders: reminder scheduling with email or in-app delivery, managed by user settings.
+- Operational tooling: Swagger UI, Actuator health checks, Flyway migrations, Docker/Compose.
+
+## System architecture
 - Frontend: Angular 21 SSR (Node and Express) with SCSS
 - Backend: Spring Boot 4 (Java 25), JWT security, validation, Spring Data JPA
 - Database: PostgreSQL 15 with Flyway migrations
@@ -14,6 +28,22 @@ custom question libraries, journaling, todos, and profile analytics into one wor
 
 Request flow:
 Browser -> Angular SSR or SPA -> /api -> Spring Boot -> PostgreSQL
+
+## Backend design
+- Controllers under `examen-backend/src/main/java/com/rei/examenbackend/controller` expose REST endpoints.
+- Services under `examen-backend/src/main/java/com/rei/examenbackend/service` orchestrate domain logic.
+- Repositories under `examen-backend/src/main/java/com/rei/examenbackend/repository` handle persistence.
+- DTOs under `examen-backend/src/main/java/com/rei/examenbackend/dto` define API request/response models.
+- Config under `examen-backend/src/main/java/com/rei/examenbackend/config` covers security, mail, and reminders.
+
+## Frontend design
+- Standalone Angular components organized by feature under `examen-frontend/src/app`.
+- Core areas: `auth`, `settings`, and `shared/features` (examination, profile, questions, todos, journal).
+- SSR runtime built by `npm run build` and served via `npm run serve:ssr:examen-frontend`.
+
+## Data model (high level)
+Users, user settings, examination sessions, answers, categories, questions, todo items,
+journal entries, gratitude entries, habit scores, and user notifications.
 
 ## Repository structure
 ```
@@ -75,6 +105,18 @@ Exposes PostgreSQL `5432`, backend `8080`, frontend `4001` (proxying container p
 docker compose -f docker-compose.prod.yml up --build
 ```
 Place `fullchain.pem` and `privkey.pem` under `deploy/certs/` for HTTPS termination.
+
+## Testing
+- Backend:
+```
+cd examen-backend
+./gradlew test
+```
+- Frontend:
+```
+cd examen-frontend
+npm test
+```
 
 ## Environment variables
 Define these in `.env.local` (git ignored). See `.env.example` for defaults.
