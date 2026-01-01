@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -46,7 +47,11 @@ public class UserSettingsServiceImpl implements UserSettingsService {
 
         settings.setTimeZone(request.getTimeZone());
         settings.setTheme(request.getTheme());
-        settings.setReminderTime(parseTime(request.getReminderTime()));
+        LocalTime reminderTime = parseTime(request.getReminderTime());
+        if (!Objects.equals(settings.getReminderTime(), reminderTime)) {
+            settings.setReminderTime(reminderTime);
+            settings.setLastReminderSentDate(null);
+        }
         settings.setEmailReminder(Boolean.TRUE.equals(request.getEmailReminder()));
         settings.setInAppReminder(Boolean.TRUE.equals(request.getInAppReminder()));
 

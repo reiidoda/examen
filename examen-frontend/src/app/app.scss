@@ -4,27 +4,32 @@
 
 .app-shell {
   min-height: 100vh;
+  background: var(--page-bg);
+  color: var(--text);
 }
 
 .app-header {
   width: 100%;
-  background: linear-gradient(180deg, rgba(10, 15, 30, 0.95) 0%, rgba(10, 15, 30, 0.7) 100%);
-  border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
-  z-index: 10;
-  backdrop-filter: blur(18px);
+  z-index: 50;
+  transition: background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.app-header.scrolled {
+  background: rgba(255, 255, 255, 0.82);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
 }
 
 .header-inner {
-  max-width: 1280px;
+  max-width: var(--content-max);
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 20px 28px 12px;
-  width: 100%;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px clamp(18px, 3vw, 40px);
 }
 
 .brand {
@@ -32,51 +37,44 @@
   align-items: center;
   gap: 12px;
   color: var(--text);
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .brand-logo {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
   object-fit: cover;
-  border: 1px solid var(--border);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
 .brand-name {
-  font-weight: 700;
-}
-
-.brand-sub {
-  color: var(--text-muted);
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .nav-links {
   display: flex;
-  justify-content: center;
-  gap: 14px;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
 }
 
 .nav-links a {
-  padding: 10px 12px;
-  border-radius: 12px;
+  padding: 8px 4px;
   color: var(--text-muted);
   font-weight: 600;
-  border: 1px solid transparent;
-  transition: all 0.15s ease;
+  font-size: 14px;
+  border-bottom: 1px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease;
 }
 
 .nav-links a:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.04);
 }
 
 .nav-links a.active {
   color: var(--text);
-  border-color: var(--border);
-  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(0, 0, 0, 0.3);
 }
 
 .header-actions {
@@ -86,19 +84,29 @@
 }
 
 .app-main {
-  padding: 24px 28px 32px;
-  max-width: 1280px;
+  min-height: calc(100vh - 72px);
+  padding: var(--space-lg) clamp(18px, 3vw, 40px) var(--space-2xl);
+  max-width: var(--content-max);
   margin: 0 auto;
+}
+
+.app-main.landing {
+  padding: 0;
+  max-width: none;
 }
 
 @media (max-width: 900px) {
   .header-inner {
-    grid-template-columns: 1fr;
-    justify-items: start;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .nav-links {
+    flex-wrap: wrap;
   }
 
   .header-actions {
     width: 100%;
-    justify-content: space-between;
+    justify-content: flex-start;
   }
 }

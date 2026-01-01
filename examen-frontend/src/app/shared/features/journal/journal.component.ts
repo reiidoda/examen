@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { JournalEntry, JournalService } from '../../../core/services/journal.service';
+import { MotionDirective } from '../../motion/motion.directive';
 
 @Component({
   selector: 'app-journal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MotionDirective],
   templateUrl: './journal.component.html',
   styleUrls: ['./journal.component.scss']
 })

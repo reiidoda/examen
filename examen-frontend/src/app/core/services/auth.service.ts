@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { ApiConfigService } from './api-config.service';
 import { LocalStorageService } from './local-storage.service';
 
 export interface AuthRequest {
@@ -35,15 +35,17 @@ export interface PasswordResetConfirmPayload {
   providedIn: 'root'
 })
 export class AuthService {
-  private baseUrl = `${environment.apiUrl}/auth`;
+  private baseUrl: string;
 
   private currentUserSubject = new BehaviorSubject<AuthResponse | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(
     private http: HttpClient,
-    private storage: LocalStorageService
+    private storage: LocalStorageService,
+    private api: ApiConfigService
   ) {
+    this.baseUrl = this.api.endpoint('auth');
     const saved = this.storage.get('auth');
     if (saved) {
       try {
@@ -90,8 +92,8 @@ export class AuthService {
     this.currentUserSubject.next(res);
   }
 
-  requestPasswordReset(payload: PasswordResetRequestPayload): Observable<string> {
-    return this.http.post(`${this.baseUrl}/reset/request`, payload, { responseType: 'text' });
+  requestPasswordReset(payload: PasswordResetRequestPayload): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/reset/request`, payload);
   }
 
   confirmPasswordReset(payload: PasswordResetConfirmPayload): Observable<void> {

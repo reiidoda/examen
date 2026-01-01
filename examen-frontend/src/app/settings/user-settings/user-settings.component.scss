@@ -1,4 +1,45 @@
+.settings-guide {
+  display: grid;
+  gap: 12px;
+}
+
+.guide-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+.guide-blocks {
+  display: grid;
+  gap: 12px;
+}
+
+.guide-block {
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.guide-block h3 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.guide-block p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
 .form-actions {
   display: flex;
   justify-content: flex-end;
+}
+
+@media (max-width: 900px) {
+  .guide-grid {
+    grid-template-columns: 1fr;
+  }
 }

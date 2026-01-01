@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserSettingsRequest, UserSettingsResponse, UserSettingsService } from './user-settings.service';
+import { MotionDirective } from '../../shared/motion/motion.directive';
 
 @Component({
   selector: 'app-user-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MotionDirective],
   templateUrl: './user-settings.component.html',
   styleUrls: ['./user-settings.component.scss']
 })

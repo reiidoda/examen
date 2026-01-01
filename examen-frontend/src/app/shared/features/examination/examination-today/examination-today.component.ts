@@ -1,17 +1,19 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { of } from 'rxjs';
-import { delay } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { ExaminationService } from '../services/examination.service';
 import {
   Category,
   Question,
+  QuestionType,
+  SessionAnswerRequest,
   SessionSummary
 } from '../models/examination.model';
 import { LocalStorageService } from '../../../../core/services/local-storage.service';
 import { ProfileService } from '../../profile/services/profile.service';
+import { MotionDirective } from '../../../motion/motion.directive';
 
 type QuestionStatus = 'incomplete' | 'completed';
 
@@ -20,34 +22,69 @@ interface QuestionCard {
   title: string;
   text: string;
   instruction: string;
-  answer?: { text: string; rating: number; placedAt: string };
+  responseType: QuestionType;
+  categoryName?: string;
+  answerText?: string;
+  reflectionText?: string;
+  feelingScore?: number;
+  answeredAt?: string;
   status: QuestionStatus;
-}
-
-interface ComposerState {
-  draftText: string;
-  draftRating: number | null;
-}
-
-interface TokenState {
-  id: string;
-  text: string;
-  rating: number;
-  createdAt: string;
+  defaultQuestion?: boolean;
+  validationMessage?: string;
 }
 
 const FALLBACK_DEFAULTS: QuestionCard[] = [
-  { id: 10001, title: 'Question 1', text: 'Where did I notice gratitude most clearly today?', instruction: 'Name the moment and what you felt.', status: 'incomplete' },
-  { id: 10002, title: 'Question 2', text: 'When did I act out of love versus fear?', instruction: 'Describe both the trigger and your response.', status: 'incomplete' },
-  { id: 10003, title: 'Question 3', text: 'Which habit or vice surfaced today, and how did I respond?', instruction: 'Be concrete about the situation and your choice.', status: 'incomplete' },
-  { id: 10004, title: 'Question 4', text: 'Where did I feel closest to God/meaning, and where did I feel distant?', instruction: 'Name the place/person/moment.', status: 'incomplete' },
-  { id: 10005, title: 'Question 5', text: 'What is one concrete step I will take tomorrow to grow?', instruction: 'Keep it small, specific, and time-bound.', status: 'incomplete' }
+  {
+    id: 10001,
+    title: 'Question 1',
+    text: 'Where did I notice gratitude most clearly today?',
+    instruction: 'Write a short reflection and rate your feeling.',
+    responseType: 'SCALE_1_5',
+    categoryName: 'Reflection',
+    status: 'incomplete'
+  },
+  {
+    id: 10002,
+    title: 'Question 2',
+    text: 'When did I act out of love versus fear?',
+    instruction: 'Write a short reflection and rate your feeling.',
+    responseType: 'SCALE_1_5',
+    categoryName: 'Reflection',
+    status: 'incomplete'
+  },
+  {
+    id: 10003,
+    title: 'Question 3',
+    text: 'Which habit or vice surfaced today, and how did I respond?',
+    instruction: 'Write a short reflection and rate your feeling.',
+    responseType: 'SCALE_1_5',
+    categoryName: 'Reflection',
+    status: 'incomplete'
+  },
+  {
+    id: 10004,
+    title: 'Question 4',
+    text: 'Where did I feel closest to God/meaning, and where did I feel distant?',
+    instruction: 'Write a short reflection and rate your feeling.',
+    responseType: 'SCALE_1_5',
+    categoryName: 'Reflection',
+    status: 'incomplete'
+  },
+  {
+    id: 10005,
+    title: 'Question 5',
+    text: 'What is one concrete step I will take tomorrow to grow?',
+    instruction: 'Write a short reflection and rate your feeling.',
+    responseType: 'SCALE_1_5',
+    categoryName: 'Reflection',
+    status: 'incomplete'
+  }
 ];
 
 @Component({
   selector: 'app-examination-today',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MotionDirective],
   templateUrl: './examination-today.component.html',
   styleUrls: ['./examination-today.component.scss']
 })
@@ -57,20 +94,20 @@ export class ExaminationTodayComponent implements OnInit, OnDestroy {
   activeSession: SessionSummary | null = null;
   history: SessionSummary[] = [];
   loading = true;
+  submitting = false;
   errorMessage = '';
   successMessage = '';
   cooldownMessage = '';
   notes = '';
   moodScore: number | null = null;
-  composer: ComposerState = { draftText: '', draftRating: null };
-  activeToken: TokenState | null = null;
-  ui = {
-    hoveredQuestionId: null as number | null,
-    dragging: false
-  };
+  moodScale = [1, 2, 3, 4, 5];
+  feelingScale = [1, 2, 3, 4, 5];
+  expandedQuestionId: number | null = null;
+
   private progressKey = 'examen-active-session';
   showAutosave = false;
   private autosaveTimeout: ReturnType<typeof setTimeout> | null = null;
+  private autoSubmitTriggered = false;
 
   constructor(
     private examService: ExaminationService,
@@ -94,10 +131,13 @@ export class ExaminationTodayComponent implements OnInit, OnDestroy {
   startSession(): void {
     this.errorMessage = '';
     this.successMessage = '';
+    this.cooldownMessage = '';
+
     this.examService.startSession().subscribe({
       next: session => {
         this.activeSession = session;
         this.resetResponses();
+        this.expandedQuestionId = null;
         this.persistProgress();
       },
       error: (err) => {
@@ -113,19 +153,41 @@ export class ExaminationTodayComponent implements OnInit, OnDestroy {
     });
   }
 
-  onAnswerChange(questionId: number, value: string): void {
-    const question = this.questions.find(q => q.id === questionId);
-    if (!question) return;
-    if (!question.answer) {
-      question.answer = {
-        text: value,
-        rating: this.composer.draftRating ?? 0,
-        placedAt: new Date().toISOString()
-      };
-    } else {
-      question.answer.text = value;
+  setReflection(questionId: number, value: string): void {
+    if (!this.activeSession) {
+      this.errorMessage = 'Start a session to answer questions.';
+      return;
     }
-    this.updateQuestionStatus(questionId);
+    const question = this.questions.find(q => q.id === questionId);
+    if (!question) {
+      return;
+    }
+    question.reflectionText = value;
+    question.answerText = value;
+    this.markQuestionDirty(question);
+    this.persistProgress();
+  }
+
+  setFeelingScore(questionId: number, value: number): void {
+    if (!this.activeSession) {
+      this.errorMessage = 'Start a session to answer questions.';
+      return;
+    }
+    const question = this.questions.find(q => q.id === questionId);
+    if (!question) {
+      return;
+    }
+    question.feelingScore = value;
+    this.markQuestionDirty(question);
+    this.persistProgress();
+  }
+
+  setMoodScore(value: number): void {
+    if (!this.activeSession) {
+      this.errorMessage = 'Start a session to record feeling.';
+      return;
+    }
+    this.moodScore = value;
     this.persistProgress();
   }
 
@@ -134,135 +196,92 @@ export class ExaminationTodayComponent implements OnInit, OnDestroy {
     this.persistProgress();
   }
 
-  onMoodChange(value: number | string): void {
-    this.moodScore = Number(value);
+  expandQuestion(questionId: number): void {
+    if (!this.activeSession) {
+      this.errorMessage = 'Start a session to answer questions.';
+      return;
+    }
+    this.expandedQuestionId = questionId;
+  }
+
+  submitQuestion(question: QuestionCard): void {
+    if (!this.activeSession) {
+      this.errorMessage = 'Start a session to answer questions.';
+      return;
+    }
+    if (this.submitting) {
+      return;
+    }
+
+    const reflectionText = question.reflectionText?.trim() ?? '';
+    const feelingScore = question.feelingScore;
+
+    if (!reflectionText || feelingScore == null) {
+      question.validationMessage = 'Complete the reflection and feeling rating.';
+      return;
+    }
+
+    question.answerText = reflectionText;
+    question.reflectionText = reflectionText;
+    question.status = 'completed';
+    question.answeredAt = new Date().toISOString();
+    question.validationMessage = '';
+    this.expandedQuestionId = null;
+    this.updateQuestionStatus(question.id);
     this.persistProgress();
-  }
-
-  selectRating(rating: number): void {
-    this.composer.draftRating = rating;
-  }
-
-  generateToken(): void {
-    this.errorMessage = '';
-    if (this.activeToken) {
-      this.errorMessage = 'Place the current token before generating another.';
-      return;
-    }
-    const text = this.composer.draftText.trim();
-    if (text.length < 3) {
-      this.errorMessage = 'Please write an answer.';
-      return;
-    }
-    if (!this.composer.draftRating) {
-      this.errorMessage = 'Please select a rating.';
-      return;
-    }
-    this.activeToken = {
-      id: 'token-' + Date.now(),
-      text,
-      rating: this.composer.draftRating,
-      createdAt: new Date().toISOString()
-    };
-  }
-
-  handleDragStart(event: DragEvent): void {
-    if (!this.activeToken) return;
-    const dt = event.dataTransfer;
-    if (!dt) return;
-    dt.setData('text/plain', JSON.stringify(this.activeToken));
-    dt.effectAllowed = 'move';
-    this.ui.dragging = true;
-    document.body.classList.add('dragging-card');
-  }
-
-  handleDragEnd(): void {
-    this.ui.dragging = false;
-    this.ui.hoveredQuestionId = null;
-    document.body.classList.remove('dragging-card');
-  }
-
-  handleDragEnter(questionId: number): void {
-    this.ui.hoveredQuestionId = questionId;
-  }
-
-  handleDragLeave(): void {
-    this.ui.hoveredQuestionId = null;
-  }
-
-  handleDrop(event: DragEvent, questionId: number): void {
-    event.preventDefault();
-    const payload = event.dataTransfer?.getData('text/plain');
-    const token: TokenState | null = payload ? JSON.parse(payload) : this.activeToken;
-    if (!token) {
-      this.handleDragEnd();
-      return;
-    }
-    this.placeTokenOnQuestion(token, questionId);
-    this.handleDragEnd();
-  }
-
-  allowDrop(event: DragEvent): void {
-    event.preventDefault();
-  }
-
-  placeTokenOnQuestion(token: TokenState, questionId: number): void {
-    const question = this.questions.find(q => q.id === questionId);
-    if (!question) return;
-    question.answer = {
-      text: token.text,
-      rating: token.rating,
-      placedAt: new Date().toISOString()
-    };
-    this.updateQuestionStatus(questionId);
-    this.activeToken = null;
-    this.successMessage = `Placed on ${question.title}`;
-    this.persistProgress();
-    setTimeout(() => this.successMessage = '', 1200);
-  }
-
-  placeTokenKeyboard(questionId: number): void {
-    if (!this.activeToken) {
-      this.errorMessage = 'Generate an answer token first.';
-      return;
-    }
-    this.placeTokenOnQuestion(this.activeToken, questionId);
+    this.maybeAutoSubmit();
   }
 
   submit(): void {
+    if (!this.activeSession) {
+      this.errorMessage = 'Start a session before submitting.';
+      return;
+    }
+    if (this.submitting) {
+      return;
+    }
     if (!this.submitEnabled) {
       this.errorMessage = 'Complete all questions before submitting.';
       this.scrollToNextUnanswered();
       return;
     }
-    const payload = {
-      examId: this.activeSession?.id ?? 'examen-daily',
-      questions: this.questions.map(q => ({
-        questionId: q.id,
-        answerText: q.answer?.text ?? '',
-        rating: q.answer?.rating ?? 0,
-        completedAt: q.answer?.placedAt ?? new Date().toISOString()
-      }))
-    };
-    of(payload).pipe(delay(600)).subscribe({
+
+    const sessionId = this.activeSession.id;
+    const answers: SessionAnswerRequest[] = this.questions.map(q => ({
+      questionId: q.id,
+      answerText: q.answerText?.trim() ?? q.reflectionText?.trim() ?? '',
+      correct: false,
+      examinationSessionId: sessionId,
+      reflectionText: q.reflectionText?.trim() ?? '',
+      feelingScore: q.feelingScore ?? undefined
+    }));
+
+    const moodScore = this.moodScore ?? this.averageFeelingScore;
+    this.submitting = true;
+    this.autoSubmitTriggered = true;
+    this.examService.submitSession(sessionId, answers, this.notes, moodScore ?? undefined).subscribe({
       next: () => {
-        this.successMessage = 'Exam submitted successfully.';
+        this.successMessage = 'Examen submitted successfully.';
         this.storage.remove(this.progressKey);
-        this.activeToken = null;
+        this.activeSession = null;
+        this.submitting = false;
+        this.expandedQuestionId = null;
         this.loadHistory();
-        this.profileService.getSummaryForLast30Days().subscribe(); // refresh profile cache
+        this.profileService.getSummaryForLast30Days().subscribe();
         this.profileService.getAnalytics().subscribe();
         this.profileService.getProgress(14).subscribe();
         this.profileService.refresh$.next();
         setTimeout(() => this.router.navigate(['/profile']), 300);
       },
       error: () => {
-        this.errorMessage = 'Failed to submit the exam.';
+        this.errorMessage = 'Failed to submit the examen.';
+        this.submitting = false;
+        this.autoSubmitTriggered = false;
       }
     });
   }
 
-  trackByQuestionId(index: number, item: Question): number {
+  trackByQuestionId(index: number, item: QuestionCard): number {
     return item?.id ?? index;
   }
 
@@ -271,31 +290,26 @@ export class ExaminationTodayComponent implements OnInit, OnDestroy {
     this.examService.getCategories().subscribe({
       next: categories => {
         this.categories = categories;
-        const loaders = categories.map(category =>
-          this.examService.getQuestionsByCategory(category.id)
-        );
-
-        let loaded = 0;
+        const loaders = categories.map(category => this.examService.getQuestionsByCategory(category.id));
         if (loaders.length === 0) {
+          this.ensureMinimumQuestions();
           this.loading = false;
+          return;
         }
 
-        loaders.forEach((obs, index) => {
-          obs.subscribe({
-            next: questions => {
-              this.mergeQuestions(questions);
-              loaded += 1;
-              if (loaded === loaders.length) {
-                this.ensureMinimumQuestions();
-                this.loading = false;
-              }
-            },
-            error: () => {
-              this.errorMessage = 'Failed to load questions.';
-              this.ensureMinimumQuestions();
-              this.loading = false;
-            }
-          });
+        const existingById = new Map(this.questions.map(q => [q.id, q]));
+        forkJoin(loaders).subscribe({
+          next: results => {
+            const combined = results.flat();
+            this.questions = this.mapQuestions(combined, existingById);
+            this.ensureMinimumQuestions();
+            this.loading = false;
+          },
+          error: () => {
+            this.errorMessage = 'Failed to load questions.';
+            this.ensureMinimumQuestions();
+            this.loading = false;
+          }
         });
       },
       error: () => {
@@ -324,18 +338,32 @@ export class ExaminationTodayComponent implements OnInit, OnDestroy {
         const saved = this.storage.get(this.progressKey);
         if (session && saved) {
           try {
-            const parsed = JSON.parse(saved) as { sessionId: number; questions: QuestionCard[]; notes: string; moodScore: number | null };
+            const parsed = JSON.parse(saved) as {
+              sessionId: number;
+              questions: QuestionCard[];
+              notes: string;
+              moodScore: number | null;
+            };
             if (parsed.sessionId === session.id) {
-              this.questions = parsed.questions || [];
-              this.notes = parsed.notes || '';
-              this.moodScore = parsed.moodScore ?? null;
+              const restored = parsed.questions || [];
+              const hasTypes = restored.every(item => item.responseType);
+              if (hasTypes) {
+                this.questions = restored;
+                this.notes = parsed.notes || '';
+                this.moodScore = parsed.moodScore ?? null;
+              } else {
+                this.storage.remove(this.progressKey);
+                this.resetResponses();
+              }
             }
           } catch {
             this.storage.remove(this.progressKey);
           }
-        } else {
+        } else if (!session) {
+          this.storage.remove(this.progressKey);
           this.resetResponses();
         }
+        this.expandedQuestionId = null;
       },
       error: () => {
         this.activeSession = null;
@@ -366,13 +394,16 @@ export class ExaminationTodayComponent implements OnInit, OnDestroy {
   private resetResponses(): void {
     this.questions = this.questions.map(q => ({
       ...q,
-      answer: undefined,
+      answerText: undefined,
+      reflectionText: undefined,
+      feelingScore: undefined,
+      answeredAt: undefined,
+      validationMessage: '',
       status: 'incomplete'
     }));
     this.notes = '';
     this.moodScore = null;
-    this.activeToken = null;
-    this.composer = { draftText: '', draftRating: null };
+    this.autoSubmitTriggered = false;
   }
 
   get totalQuestions(): number {
@@ -408,40 +439,102 @@ export class ExaminationTodayComponent implements OnInit, OnDestroy {
     }
   }
 
-  get trendSeries(): number[] {
-    return (this.history || [])
-      .filter(s => s.score !== undefined || s.moodScore !== undefined)
-      .slice(0, 12)
-      .map(s => s.score ?? ((s.moodScore ?? 0) * 20));
-  }
-
   get submitEnabled(): boolean {
-    return this.questions.length > 0 && this.questions.every(q => q.status === 'completed');
+    return !!this.activeSession && this.questions.length > 0 && this.questions.every(q => q.status === 'completed');
   }
 
-  private mergeQuestions(questions: Question[]): void {
-    const startIndex = this.questions.length;
-    const mapped = questions.map((q, idx) => ({
-      id: q.id,
-      title: `Question ${startIndex + idx + 1}`,
-      text: q.text,
-      instruction: 'Write a concise reflection, then rate how strongly it applies.',
-      status: 'incomplete' as QuestionStatus,
-      defaultQuestion: !q.custom
-    }));
-    this.questions = [...this.questions, ...mapped];
+  get averageFeelingScore(): number | null {
+    const scores = this.questions
+      .map(q => q.feelingScore)
+      .filter((value): value is number => value != null);
+    if (!scores.length) {
+      return null;
+    }
+    const total = scores.reduce((sum, value) => sum + value, 0);
+    return Math.round(total / scores.length);
+  }
+
+  get sessionMoodScore(): number | null {
+    return this.moodScore ?? this.averageFeelingScore;
+  }
+
+  get lastSession(): SessionSummary | null {
+    return this.history.length ? this.history[0] : null;
+  }
+
+  get cooldownRemaining(): string | null {
+    if (!this.lastSession?.completedAt) {
+      return null;
+    }
+    const completedAt = new Date(this.lastSession.completedAt).getTime();
+    if (Number.isNaN(completedAt)) {
+      return null;
+    }
+    const nextAllowed = completedAt + 24 * 60 * 60 * 1000;
+    const diffMs = nextAllowed - Date.now();
+    if (diffMs <= 0) {
+      return null;
+    }
+    const hours = Math.floor(diffMs / (60 * 60 * 1000));
+    const minutes = Math.floor((diffMs % (60 * 60 * 1000)) / (60 * 1000));
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+  }
+
+  get canStartSession(): boolean {
+    return !this.activeSession && !this.cooldownRemaining;
+  }
+
+  private mapQuestions(questions: Question[], existingById: Map<number, QuestionCard>): QuestionCard[] {
+    const sorted = [...questions].sort((a, b) => {
+      const aOrder = a.orderNumber ?? 0;
+      const bOrder = b.orderNumber ?? 0;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return a.id - b.id;
+    });
+
+    return sorted.map((q, idx) => {
+      const existing = existingById.get(q.id);
+      const mapped: QuestionCard = {
+        id: q.id,
+        title: `Question ${idx + 1}`,
+        text: q.text,
+        instruction: this.instructionFor(),
+        responseType: q.responseType,
+        categoryName: q.category?.name,
+        status: 'incomplete',
+        defaultQuestion: !q.custom
+      };
+
+      if (existing?.answerText) {
+        mapped.answerText = existing.answerText;
+        mapped.answeredAt = existing.answeredAt;
+        mapped.status = existing.status ?? 'incomplete';
+        mapped.reflectionText = existing.reflectionText;
+        mapped.feelingScore = existing.feelingScore;
+        mapped.validationMessage = existing.validationMessage;
+      }
+
+      return mapped;
+    });
   }
 
   private ensureMinimumQuestions(): void {
     if (this.questions.length === 0) {
-      this.questions = FALLBACK_DEFAULTS.map((q, idx) => ({ ...q, title: `Question ${idx + 1}`, defaultQuestion: true }));
+      this.questions = FALLBACK_DEFAULTS.map((q, idx) => ({
+        ...q,
+        title: `Question ${idx + 1}`,
+        defaultQuestion: true
+      }));
       return;
     }
     if (this.questions.length < 5) {
       const needed = 5 - this.questions.length;
       const filler = FALLBACK_DEFAULTS.slice(0, needed).map((q, idx) => ({
         ...q,
-        id: q.id + idx + 100, // avoid collision
+        id: q.id + idx + 100,
         title: `Question ${this.questions.length + idx + 1}`,
         defaultQuestion: true
       }));
@@ -452,10 +545,30 @@ export class ExaminationTodayComponent implements OnInit, OnDestroy {
   private updateQuestionStatus(questionId: number): void {
     const question = this.questions.find(q => q.id === questionId);
     if (!question) return;
-    if (question.answer?.text && question.answer.text.trim().length > 0 && question.answer.rating) {
+    if (
+      question.reflectionText?.trim() &&
+      question.feelingScore != null
+    ) {
       question.status = 'completed';
     } else {
       question.status = 'incomplete';
+    }
+  }
+
+  private instructionFor(): string {
+    return 'Write a short reflection and rate your feeling.';
+  }
+
+  private markQuestionDirty(question: QuestionCard): void {
+    if (question.status === 'completed') {
+      question.status = 'incomplete';
+    }
+    question.validationMessage = '';
+  }
+
+  private maybeAutoSubmit(): void {
+    if (this.submitEnabled && !this.submitting && !this.autoSubmitTriggered) {
+      this.submit();
     }
   }
 }

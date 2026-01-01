@@ -2,7 +2,12 @@ import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'auth/login', pathMatch: 'full', title: 'Welcome' },
+  {
+    path: '',
+    loadComponent: () =>
+      import('./landing/landing.component').then(m => m.LandingComponent),
+    title: 'Examen'
+  },
 
   // AUTH
   {
@@ -31,6 +36,14 @@ export const routes: Routes = [
   },
 
   // EXAMINATION
+  {
+    path: 'dashboard',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./shared/features/dashboard/dashboard.component')
+        .then(m => m.DashboardComponent),
+    title: 'Dashboard'
+  },
   {
     path: 'examination',
     canActivate: [AuthGuard],
@@ -114,5 +127,5 @@ export const routes: Routes = [
   },
 
   // WILDCARD
-  { path: '**', redirectTo: 'auth/login' }
+  { path: '**', redirectTo: '' }
 ]; // <-- 🔥 THIS WAS MISSING

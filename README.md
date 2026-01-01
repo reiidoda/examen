@@ -1,68 +1,62 @@
-# 🚀 Examen – Full Stack Examination Platform
+# <img src="examen-frontend/public/icon.png" alt="Examen icon" height="28"> Examen
 
-<img title="Examen" alt="Alt text" src="/Docs/examen.png">
+![Examen](/Docs/examen.png)
 
-Full-stack daily examination platform built with Angular SSR and Spring Boot. Current capabilities include JWT auth, daily session tracking with mood/notes, category and question management (with default prompts), todos, journaling, growth metrics, and a profile dashboard with streak/progress analytics. The stack is fully dockerized with Flyway migrations and health checks.
+## Overview
+Examen is a daily examination and reflection platform. It combines guided questions, mood tracking,
+custom question libraries, journaling, todos, and profile analytics into one workflow.
 
-## Current Capabilities
-- JWT auth (register/login) with password reset tokens
-- Examination sessions: start/active session guard, 24h cooldown, submit answers with mood/notes, category scoring, daily log
-- Categories and questions: CRUD, default seed questions, custom user questions with ownership rules
-- Profile dashboard: streak and completion summaries, progress timeline, weekly/monthly summaries, category/mood analytics
-- Productivity/growth: todos with due times, journal entries, gratitude and habit scoring endpoints, meditation tips, PDF export placeholder
-- User settings: time zone, reminder time, theme, email/in-app reminder flags
-- Ops: Flyway migrations, actuator health, Swagger UI, Docker/Docker Compose (dev + nginx-based prod)
+## Architecture
+- Frontend: Angular 21 SSR (Node and Express) with SCSS
+- Backend: Spring Boot 4 (Java 25), JWT security, validation, Spring Data JPA
+- Database: PostgreSQL 15 with Flyway migrations
+- Ops: Docker and Docker Compose, Nginx for production, Swagger UI, Actuator health
 
-## Tech Stack
-| Layer | Technology |
-|-------|------------|
-| Frontend | Angular 21, Standalone Components, SSR (Node/Express wrapper), SCSS |
-| Backend | Spring Boot 4 (Java 25), JWT security, Validation, Spring Data JPA |
-| Database | PostgreSQL 15 + Flyway migrations |
-| Docs/Ops | springdoc-openapi, Actuator health, Docker/Compose, Nginx (prod) |
+Request flow:
+Browser -> Angular SSR or SPA -> /api -> Spring Boot -> PostgreSQL
 
-## Project Layout
+## Repository structure
 ```
 README.md
-docker-compose.yml / docker-compose.prod.yml
+TODO.md
+.env.example
+Docs/
 examen-backend/   # Spring Boot API, Flyway migrations, Dockerfile
-examen-frontend/  # Angular 21 SSR app, Dockerfile
+examen-frontend/  # Angular SSR app, Dockerfile
 deploy/           # nginx.conf and TLS mount points for prod compose
-scripts/db-backup.sh, scripts/db-restore.sh
-Docs/examen.png
+scripts/          # db-backup.sh, db-restore.sh
 ```
 
-## Local Development (without Docker)
-Requirements: JDK 25+, Node 20+/npm 11, PostgreSQL 15.
+## Prerequisites
+- JDK 25+
+- Node 20+ and npm 11+
+- PostgreSQL 15 (or Docker)
+- Docker and Docker Compose (optional)
 
-1) Start PostgreSQL (local or `docker compose up postgres`). Create a local `.env.local` (kept out of git) with your own credentials:
-```
-SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/<your_db_name>
-SPRING_DATASOURCE_USERNAME=<your_db_user>
-SPRING_DATASOURCE_PASSWORD=<your_db_password>
-APP_JWT_SECRET=<long-random-secret>
-POSTGRES_USER=<your_db_user>
-POSTGRES_PASSWORD=<your_db_password>
-POSTGRES_DB=<your_db_name>
-```
-Keep this file out of git; Docker Compose will fall back to the defaults in `docker-compose*.yml` if these variables are unset.
+## Configuration
+1) Copy `.env.example` to `.env.local`.
+2) Update the values for your environment.
 
-2) Backend
+Docker Compose falls back to defaults if `POSTGRES_*` are not set.
+
+## Build and run (local, no Docker)
+1) Start PostgreSQL (local or `docker compose up postgres`).
+2) Run the backend:
 ```
 cd examen-backend
 ./gradlew bootRun
 ```
-API runs on http://localhost:8080 with Swagger at `/swagger-ui/index.html`.
+The API runs at http://localhost:8080 with Swagger at `/swagger-ui/index.html`.
 
-3) Frontend (dev server, HMR)
+3) Run the frontend dev server:
 ```
 cd examen-frontend
 npm install
 npm start
 ```
-Angular dev server runs on http://localhost:4200 and targets the backend at http://localhost:8080/api.
+The dev server runs at http://localhost:4200 and targets http://localhost:8080/api.
 
-4) Frontend (SSR runtime, optional)
+4) Run the SSR build (optional):
 ```
 cd examen-frontend
 npm run build
@@ -70,44 +64,69 @@ API_URL=http://localhost:8080/api PORT=4000 npm run serve:ssr:examen-frontend
 ```
 
 ## Docker Compose
-- Default compose builds backend + frontend + Postgres:
+- Standard stack:
 ```
 docker compose up --build
 ```
 Exposes PostgreSQL `5432`, backend `8080`, frontend `4001` (proxying container port 4000).
 
-- Production-style stack with nginx/TLS passthrough:
+- Production style stack with Nginx:
 ```
 docker compose -f docker-compose.prod.yml up --build
 ```
-Place `fullchain.pem` and `privkey.pem` under `deploy/certs/` for HTTPS termination. nginx forwards `/api` to the backend and everything else to the SSR frontend.
+Place `fullchain.pem` and `privkey.pem` under `deploy/certs/` for HTTPS termination.
 
-### Environment Variables
-Define these in your private `.env.local` (git-ignored). Replace the placeholders with your own values:
+## Environment variables
+Define these in `.env.local` (git ignored). See `.env.example` for defaults.
 
-| Name | Description | Example (do not commit) |
-|------|-------------|-------------------------|
-| POSTGRES_USER | PostgreSQL username used by both Postgres and Spring | <your_db_user> |
-| POSTGRES_PASSWORD | PostgreSQL password | <your_db_password> |
-| POSTGRES_DB | PostgreSQL database name | <your_db_name> |
-| SPRING_DATASOURCE_URL | JDBC URL for local dev (overrides defaults) | jdbc:postgresql://localhost:5432/<your_db_name> |
-| APP_JWT_SECRET | JWT signing secret (HS256) | <your_jwt_secret> |
-| API_URL | Frontend SSR API base (used by Node server) | http://backend:8080/api |
+| Name | Description |
+|------|-------------|
+| POSTGRES_USER | PostgreSQL username |
+| POSTGRES_PASSWORD | PostgreSQL password |
+| POSTGRES_DB | PostgreSQL database name |
+| SPRING_DATASOURCE_URL | JDBC URL for local dev |
+| SPRING_DATASOURCE_USERNAME | JDBC username |
+| SPRING_DATASOURCE_PASSWORD | JDBC password |
+| APP_JWT_SECRET | JWT signing secret (HS256) |
+| API_URL | Frontend SSR API base |
+| APP_PASSWORD_RESET_URL | Frontend reset page URL |
+| APP_PASSWORD_RESET_FROM | Email "from" address for reset mail |
+| APP_PASSWORD_RESET_MAX_REQUESTS | Max reset requests per window |
+| APP_PASSWORD_RESET_WINDOW_MINUTES | Rate limit window in minutes |
+| APP_PASSWORD_RESET_TOKEN_TTL_MINUTES | Reset token expiry in minutes |
+| APP_PASSWORD_RESET_MAIL_ENABLED | Toggle mail delivery |
+| SPRING_MAIL_HOST | SMTP host |
+| SPRING_MAIL_PORT | SMTP port |
+| SPRING_MAIL_USERNAME | SMTP username |
+| SPRING_MAIL_PASSWORD | SMTP password |
+| SPRING_MAIL_SMTP_AUTH | SMTP auth flag |
+| SPRING_MAIL_SMTP_STARTTLS_ENABLE | SMTP STARTTLS flag |
+| APP_REMINDER_ENABLED | Toggle reminder scheduling |
+| APP_REMINDER_MAIL_ENABLED | Toggle reminder email delivery |
+| APP_REMINDER_FROM | Reminder email "from" address |
+| APP_REMINDER_SUBJECT | Reminder email subject |
+| APP_REMINDER_APP_URL | Link used in reminder emails |
+| APP_REMINDER_IN_APP_TITLE | In-app reminder title |
+| APP_REMINDER_IN_APP_MESSAGE | In-app reminder body |
+| APP_REMINDER_CRON | Reminder schedule (cron) |
 
-When running Docker Compose, leaving `POSTGRES_*` unset uses the compose defaults (`postgres` / `postgres` / `examen`); override them in `.env.local` for your own deployments.
-
-## APIs
-- Auth: `/api/auth/login`, `/api/auth/register`, `/api/auth/reset/*`
-- Sessions: `/api/sessions/start`, `/api/sessions/{id}/submit`, `/api/sessions/active`, `/api/sessions/me`
-- Catalog: `/api/categories`, `/api/questions`, `/api/questions/custom`, `/api/questions/my`
+## API reference
+- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+- Auth: `/api/auth/*`
+- Sessions: `/api/sessions/*`
+- Catalog: `/api/categories`, `/api/questions/*`
 - Todos: `/api/todos`
 - Journal: `/api/journal`
-- Profile: `/api/profile/summary`, `/progress`, `/summary/weekly`, `/summary/monthly`, `/analytics`
-- Growth/metrics: `/api/growth/gratitude`, `/habits`, `/weekly-summary`, `/meditation-suggestions`, `/export/pdf`
+- Profile: `/api/profile/*`
+- Growth: `/api/growth/*`
 - Settings: `/api/settings`
+- Notifications: `/api/notifications`
+- Insights: `/api/insights/*`
 - Health: `/actuator/health`
 
+## Scripts
+- `scripts/db-backup.sh`
+- `scripts/db-restore.sh`
+
 ## Notes
-- Examination UI currently uses the backend for session start/load but submits locally; wire it to `/api/sessions/{id}/submit` to persist answers/mood (see TODO.md).
-- Migrations run automatically on startup; Flyway scripts live in `examen-backend/src/main/resources/db/migration`.
-- Utility scripts for DB backup/restore live under `scripts/`.
+- Flyway migrations live under `examen-backend/src/main/resources/db/migration`.

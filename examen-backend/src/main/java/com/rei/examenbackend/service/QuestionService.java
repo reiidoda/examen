@@ -27,4 +27,6 @@ public interface QuestionService {
     List<QuestionResponse> getMine(User owner);
 
     void deleteMine(Long id, User owner);
+
+    QuestionResponse updateMine(Long id, QuestionRequest request, User owner);
 }

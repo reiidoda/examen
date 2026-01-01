@@ -3,6 +3,7 @@ package com.rei.examenbackend.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity
@@ -30,4 +31,6 @@ public class UserSettings {
     private Boolean emailReminder;
 
     private Boolean inAppReminder;
+
+    private LocalDate lastReminderSentDate;
 }

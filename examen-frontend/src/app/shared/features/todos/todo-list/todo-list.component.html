@@ -1,14 +1,59 @@
 <div class="section-stack">
-  <div class="page-header">
+  <div class="page-header" appMotion>
     <div>
       <p class="overline">Todos</p>
       <h1>Today’s priorities</h1>
       <p class="muted small">Keep your focus items close to your daily examen.</p>
     </div>
-    <span class="pill">{{ todos.length }} items</span>
+    <div class="chip-row">
+      <span class="pill">{{ pendingCount }} pending</span>
+      <span class="pill">{{ overdueCount }} overdue</span>
+    </div>
   </div>
 
-  <div class="card composer">
+  <section class="todo-guide card" appMotion>
+    <div class="guide-grid">
+      <div>
+        <p class="overline">How it works</p>
+        <h2>Plan, schedule, complete</h2>
+        <p class="muted small">
+          Todos are time-bound tasks with clear due dates. Completed items update your profile
+          metrics and feed weekly summaries.
+        </p>
+      </div>
+      <div class="guide-blocks">
+        <div class="guide-block">
+          <h3>Due time</h3>
+          <p>Set an exact finish time to keep your plan specific.</p>
+        </div>
+        <div class="guide-block">
+          <h3>Status</h3>
+          <p>Completed tasks are recorded in your profile analytics.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="card todo-summary" appMotion>
+    <div class="summary-item">
+      <p class="muted tiny">Total tasks</p>
+      <div class="stat-value">{{ totalCount }}</div>
+    </div>
+    <div class="summary-item">
+      <p class="muted tiny">Pending</p>
+      <div class="stat-value">{{ pendingCount }}</div>
+    </div>
+    <div class="summary-item">
+      <p class="muted tiny">Due today</p>
+      <div class="stat-value">{{ dueTodayCount }}</div>
+    </div>
+    <div class="summary-item">
+      <p class="muted tiny">Overdue</p>
+      <div class="stat-value">{{ overdueCount }}</div>
+    </div>
+  </div>
+
+  <div class="card composer" appMotion>
     <div>
       <label class="muted tiny">Title</label>
       <input type="text" [(ngModel)]="draftTitle" placeholder="Add a todo" />
@@ -32,7 +77,7 @@
   </div>
   <div class="alert" *ngIf="loading">Loading todos…</div>
 
-  <div class="card todo-list" *ngIf="filteredTodos.length">
+  <div class="card todo-list" *ngIf="filteredTodos.length" appMotion>
     <div class="todo-item" *ngFor="let todo of filteredTodos" (click)="toggleDone(todo)" [class.done]="todo.completed">
       <div class="check" [class.done]="todo.completed">
         <span *ngIf="todo.completed">&#10003;</span>

@@ -21,6 +21,9 @@ export interface SessionAnswerRequest {
   questionId: number;
   answerText: string;
   correct?: boolean;
+  examinationSessionId: number;
+  reflectionText?: string;
+  feelingScore?: number;
 }
 
 export interface SessionSummary {

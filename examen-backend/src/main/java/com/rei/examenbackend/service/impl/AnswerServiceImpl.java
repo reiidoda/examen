@@ -34,6 +34,8 @@ public class AnswerServiceImpl implements AnswerService {
         Answer answer = Answer.builder()
                 .answerText(request.getAnswerText())
                 .correct(request.isCorrect())
+                .reflectionText(request.getReflectionText())
+                .feelingScore(request.getFeelingScore())
                 .question(question)
                 .examinationSession(session)
                 .build();
@@ -58,6 +60,8 @@ public class AnswerServiceImpl implements AnswerService {
 
         answer.setAnswerText(request.getAnswerText());
         answer.setCorrect(request.isCorrect());
+        answer.setReflectionText(request.getReflectionText());
+        answer.setFeelingScore(request.getFeelingScore());
         answer.setQuestion(question);
         answer.setExaminationSession(session);
 
@@ -106,6 +110,8 @@ public class AnswerServiceImpl implements AnswerService {
                 .id(a.getId())
                 .answerText(a.getAnswerText())
                 .correct(a.isCorrect())
+                .reflectionText(a.getReflectionText())
+                .feelingScore(a.getFeelingScore())
                 .questionId(a.getQuestion().getId())
                 .examinationSessionId(a.getExaminationSession().getId())
                 .build();

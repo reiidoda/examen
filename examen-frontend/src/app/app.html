@@ -1,44 +1,41 @@
 <div class="app-shell">
-  <header class="app-header">
+  <header class="app-header" [class.scrolled]="isScrolled">
     <div class="header-inner">
-      <a class="brand" routerLink="/examination">
-        <img src="/apple-touch-icon.png" alt="Examen logo" class="brand-logo" />
-        <div>
-          <div class="brand-name">Examen</div>
-          <div class="brand-sub">Platform</div>
-        </div>
+      <a class="brand" routerLink="/">
+        <img src="/square-examen.png" alt="Examen logo" class="brand-logo" />
+        <div class="brand-name">Examen</div>
       </a>
 
-      <nav class="nav-links" *ngIf="isLoggedIn; else guestNav">
+      <nav class="nav-links" *ngIf="isLanding && !isLoggedIn">
+        <a routerLink="/" fragment="overview">How it works</a>
+        <a routerLink="/" fragment="chapters">Modules</a>
+        <a routerLink="/" fragment="motion">Insights</a>
+        <a routerLink="/" fragment="pricing">Trust</a>
+      </nav>
+
+      <nav class="nav-links" *ngIf="isLoggedIn">
+        <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
         <a routerLink="/examination" routerLinkActive="active">Examination</a>
-        <a routerLink="/todos" routerLinkActive="active">Todos</a>
-        <a routerLink="/categories" routerLinkActive="active">Categories</a>
-        <a routerLink="/profile" routerLinkActive="active">Profile</a>
         <a routerLink="/questions" routerLinkActive="active">Questions</a>
+        <a routerLink="/todos" routerLinkActive="active">Todos</a>
         <a routerLink="/journal" routerLinkActive="active">Journal</a>
+        <a routerLink="/profile" routerLinkActive="active">Profile</a>
         <a routerLink="/settings" routerLinkActive="active">Settings</a>
       </nav>
-      <ng-template #guestNav>
-        <nav class="nav-links">
-          <a routerLink="/auth/login" routerLinkActive="active">Login</a>
-          <a routerLink="/auth/register" routerLinkActive="active">Create account</a>
-        </nav>
-      </ng-template>
 
       <div class="header-actions" *ngIf="isLoggedIn; else guestActions">
-        <span class="pill">Focused mode</span>
         <button class="btn btn-ghost" (click)="logout()">Logout</button>
       </div>
       <ng-template #guestActions>
         <div class="header-actions">
           <a class="btn btn-ghost" routerLink="/auth/login">Login</a>
-          <a class="btn btn-primary" routerLink="/auth/register">Get started</a>
+          <a class="btn btn-primary" routerLink="/auth/register">Register</a>
         </div>
       </ng-template>
     </div>
   </header>
 
-  <main class="app-main">
+  <main class="app-main" [class.landing]="isLanding">
     <router-outlet></router-outlet>
   </main>
 </div>

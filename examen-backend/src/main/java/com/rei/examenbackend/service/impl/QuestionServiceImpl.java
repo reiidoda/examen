@@ -151,6 +151,27 @@ public class QuestionServiceImpl implements QuestionService {
         questionRepository.delete(question);
     }
 
+    @Override
+    public QuestionResponse updateMine(Long id, QuestionRequest request, User owner) {
+        Question question = questionRepository.findById(id)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Question not found"));
+        if (question.getOwner() == null || !question.getOwner().getId().equals(owner.getId())) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "You cannot edit this question");
+        }
+
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Category not found"));
+
+        question.setText(request.getText());
+        question.setOrderNumber(request.getOrderNumber());
+        question.setDifficulty(request.getDifficulty());
+        question.setResponseType(request.getResponseType() == null ? QuestionType.SCALE_1_5 : request.getResponseType());
+        question.setCategory(category);
+
+        questionRepository.save(question);
+        return toResponse(question);
+    }
+
     private QuestionResponse toResponse(Question q) {
         return QuestionResponse.builder()
                 .id(q.getId())

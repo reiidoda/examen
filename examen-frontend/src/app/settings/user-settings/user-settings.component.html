@@ -1,5 +1,5 @@
 <div class="section-stack" *ngIf="settings">
-  <div class="page-header">
+  <div class="page-header" appMotion>
     <div>
       <p class="overline">Settings</p>
       <h1>Your preferences</h1>
@@ -7,7 +7,30 @@
     </div>
   </div>
 
-  <div class="card form-grid">
+  <section class="settings-guide card" appMotion>
+    <div class="guide-grid">
+      <div>
+        <p class="overline">How it works</p>
+        <h2>Control your cadence</h2>
+        <p class="muted small">
+          Settings determine when reminders appear and how your day is calculated. Keep your
+          time zone accurate so sessions align with your local rhythm.
+        </p>
+      </div>
+      <div class="guide-blocks">
+        <div class="guide-block">
+          <h3>Reminders</h3>
+          <p>Email and in-app alerts use your preferred reminder time.</p>
+        </div>
+        <div class="guide-block">
+          <h3>Theme</h3>
+          <p>Choose a light, dark, or system theme for focus.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="card form-grid" appMotion>
     <div class="form-field">
       <label for="tz">Time zone</label>
       <select id="tz" [(ngModel)]="settings.timeZone">

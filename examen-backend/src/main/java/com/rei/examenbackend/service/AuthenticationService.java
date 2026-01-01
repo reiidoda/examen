@@ -12,7 +12,7 @@ public interface AuthenticationService {
 
     AuthResponse login(AuthRequest request);
 
-    String requestPasswordReset(PasswordResetRequest request);
+    void requestPasswordReset(PasswordResetRequest request);
 
     void confirmPasswordReset(PasswordResetConfirmRequest request);
 }

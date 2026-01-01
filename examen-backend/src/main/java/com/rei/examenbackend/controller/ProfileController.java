@@ -64,19 +64,47 @@ public class ProfileController {
                 .filter(s -> s.getCompletedAt() != null)
                 .count();
 
-        Double avgMood = sessionRepository.findAllByUserAndCompletedAtBetweenOrderByCompletedAtDesc(persisted, monthAgo, now)
-                .stream()
-                .filter(s -> s.getMoodScore() != null)
-                .mapToInt(ExaminationSession::getMoodScore)
+        var recentSessions = sessionRepository.findAllByUserAndCompletedAtBetweenOrderByCompletedAtDesc(
+                persisted, monthAgo, now);
+
+        Double avgMood = recentSessions.stream()
+                .filter(s -> s.getAnswers() != null)
+                .flatMap(s -> s.getAnswers().stream())
+                .map(Answer::getFeelingScore)
+                .filter(java.util.Objects::nonNull)
+                .mapToInt(Integer::intValue)
                 .average()
                 .orElse(Double.NaN);
 
-        Integer todayMood = allSessions.stream()
+        if (Double.isNaN(avgMood)) {
+            avgMood = recentSessions.stream()
+                    .filter(s -> s.getMoodScore() != null)
+                    .mapToInt(ExaminationSession::getMoodScore)
+                    .average()
+                    .orElse(Double.NaN);
+        }
+
+        var todayFeelingAvg = allSessions.stream()
                 .filter(s -> s.getCompletedAt() != null && s.getCompletedAt().toLocalDate().isEqual(java.time.LocalDate.now()))
-                .map(ExaminationSession::getMoodScore)
+                .filter(s -> s.getAnswers() != null)
+                .flatMap(s -> s.getAnswers().stream())
+                .map(Answer::getFeelingScore)
                 .filter(java.util.Objects::nonNull)
-                .findFirst()
-                .orElse(null);
+                .mapToInt(Integer::intValue)
+                .average();
+
+        Integer todayMood = todayFeelingAvg.isPresent()
+                ? (int) Math.round(todayFeelingAvg.getAsDouble())
+                : null;
+
+        if (todayMood == null) {
+            todayMood = allSessions.stream()
+                    .filter(s -> s.getCompletedAt() != null && s.getCompletedAt().toLocalDate().isEqual(java.time.LocalDate.now()))
+                    .map(ExaminationSession::getMoodScore)
+                    .filter(java.util.Objects::nonNull)
+                    .findFirst()
+                    .orElse(null);
+        }
 
         java.time.LocalDate endDate = java.time.LocalDate.now();
         java.time.LocalDate startDate = endDate.minusDays(13);
@@ -190,12 +218,21 @@ public class ProfileController {
                 .average()
                 .orElse(Double.NaN);
 
-        Double overallMood = sessions.stream()
-                .map(ExaminationSession::getMoodScore)
+        Double overallMood = answers.stream()
+                .map(Answer::getFeelingScore)
                 .filter(java.util.Objects::nonNull)
                 .mapToInt(Integer::intValue)
                 .average()
                 .orElse(Double.NaN);
+
+        if (Double.isNaN(overallMood)) {
+            overallMood = sessions.stream()
+                    .map(ExaminationSession::getMoodScore)
+                    .filter(java.util.Objects::nonNull)
+                    .mapToInt(Integer::intValue)
+                    .average()
+                    .orElse(Double.NaN);
+        }
 
         var categories = answers.stream()
                 .collect(java.util.stream.Collectors.groupingBy(answer -> answer.getQuestion().getCategory()))
@@ -208,21 +245,12 @@ public class ProfileController {
                             .flatMapToDouble(java.util.OptionalDouble::stream)
                             .average()
                             .orElse(Double.NaN);
-                    long yesTotal = answerList.stream()
-                            .filter(a -> a.getQuestion().getResponseType() == QuestionType.YES_NO)
-                            .count();
-                    long yesCount = answerList.stream()
-                            .filter(a -> a.getQuestion().getResponseType() == QuestionType.YES_NO)
-                            .filter(this::isYes)
-                            .count();
-                    Double yesRate = yesTotal > 0 ? (yesCount * 100d / yesTotal) : null;
-
                     return ProfileAnalyticsResponse.CategoryBreakdown.builder()
                             .categoryId(entry.getKey().getId())
                             .categoryName(entry.getKey().getName())
                             .answers((long) answerList.size())
                             .averageScore(Double.isNaN(avg) ? null : avg)
-                            .yesRate(yesRate)
+                            .yesRate(null)
                             .build();
                 })
                 .sorted(java.util.Comparator.comparing(ProfileAnalyticsResponse.CategoryBreakdown::getAverageScore,
@@ -317,6 +345,12 @@ public class ProfileController {
     }
 
     private java.util.OptionalDouble calculateAnswerScore(Answer answer) {
+        Integer feelingScore = answer.getFeelingScore();
+        if (feelingScore != null) {
+            double normalized = ((double) (feelingScore - 1) / 4d) * 100d;
+            return java.util.OptionalDouble.of(normalized);
+        }
+
         var question = answer.getQuestion();
         var response = answer.getAnswerText();
         if (response == null) {
@@ -345,14 +379,6 @@ public class ProfileController {
             }
         }
         return java.util.OptionalDouble.empty();
-    }
-
-    private boolean isYes(Answer answer) {
-        if (answer.getAnswerText() == null) {
-            return false;
-        }
-        String normalized = answer.getAnswerText().trim().toLowerCase();
-        return normalized.equals("yes") || normalized.equals("true") || normalized.equals("1");
     }
 
     private Double computeSpiritualScore(Double mood, long streakDays, long sessionsThisMonth, long categoriesUsed) {

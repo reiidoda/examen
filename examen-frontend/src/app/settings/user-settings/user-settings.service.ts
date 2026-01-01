@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { ApiConfigService } from '../../core/services/api-config.service';
 
 export interface UserSettingsRequest {
   timeZone: string;
@@ -15,9 +15,14 @@ export interface UserSettingsResponse extends UserSettingsRequest {}
 
 @Injectable({ providedIn: 'root' })
 export class UserSettingsService {
-  private baseUrl = `${environment.apiUrl}/settings`;
+  private baseUrl: string;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private api: ApiConfigService
+  ) {
+    this.baseUrl = this.api.endpoint('settings');
+  }
 
   get(): Observable<UserSettingsResponse> {
     return this.http.get<UserSettingsResponse>(this.baseUrl);

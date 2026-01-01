@@ -1,6 +1,7 @@
 package com.rei.examenbackend.service;
 
 import com.rei.examenbackend.config.JwtService;
+import com.rei.examenbackend.config.PasswordResetProperties;
 import com.rei.examenbackend.dto.auth.AuthRequest;
 import com.rei.examenbackend.dto.auth.RegisterRequest;
 import com.rei.examenbackend.exception.ApiException;
@@ -27,6 +28,8 @@ class AuthenticationServiceImplTest {
     private PasswordEncoder passwordEncoder;
     private JwtService jwtService;
     private AuthenticationManager authenticationManager;
+    private PasswordResetMailService passwordResetMailService;
+    private PasswordResetProperties passwordResetProperties;
     private AuthenticationServiceImpl authenticationService;
 
     @BeforeEach
@@ -36,12 +39,16 @@ class AuthenticationServiceImplTest {
         passwordEncoder = mock(PasswordEncoder.class);
         jwtService = mock(JwtService.class);
         authenticationManager = mock(AuthenticationManager.class);
+        passwordResetMailService = mock(PasswordResetMailService.class);
+        passwordResetProperties = new PasswordResetProperties();
         authenticationService = new AuthenticationServiceImpl(
                 userRepository,
                 resetTokenRepository,
                 passwordEncoder,
                 jwtService,
-                authenticationManager
+                authenticationManager,
+                passwordResetMailService,
+                passwordResetProperties
         );
     }
 

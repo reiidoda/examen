@@ -1,44 +1,51 @@
 <div class="section-stack">
-  <div class="page-header">
+  <div class="page-header" appMotion>
     <div>
       <p class="overline">Profile</p>
       <h1>Your last 30 days</h1>
-      <p class="muted small">A quick snapshot of what you’ve shipped and reflected on.</p>
+      <p class="muted small">A snapshot of your spiritual rhythm and daily examen progress.</p>
     </div>
     <span class="pill">Insight mode</span>
   </div>
 
-  <div class="alert" *ngIf="loading">Loading your summary…</div>
+  <div class="alert" *ngIf="loading">Loading your summary...</div>
 
   <div *ngIf="summary" class="stat-grid">
-    <div class="stat-card card">
+    <div class="stat-card card" appMotion>
       <p class="muted small">Examinations completed</p>
       <div class="stat-value">{{ summary.examinationsCompleted }}</div>
       <p class="muted tiny">Consistent reflection builds clarity.</p>
     </div>
-    <div class="stat-card card">
+    <div class="stat-card card" appMotion>
       <p class="muted small">Todos completed</p>
       <div class="stat-value">{{ summary.todosCompleted }}</div>
       <p class="muted tiny">Checked-off tasks in the last month.</p>
     </div>
-    <div class="stat-card card">
+    <div class="stat-card card" appMotion>
       <p class="muted small">Categories used</p>
       <div class="stat-value">{{ summary.categoriesUsed }}</div>
       <p class="muted tiny">Active themes keeping you organized.</p>
     </div>
-    <div class="stat-card card">
+    <div class="stat-card card" appMotion>
       <p class="muted small">Streak</p>
       <div class="stat-value">{{ summary.streakDays }} days</div>
-      <p class="muted tiny">Daily momentum you’ve kept alive.</p>
+      <p class="muted tiny">Daily momentum you've kept alive.</p>
     </div>
-    <div class="stat-card card">
-      <p class="muted small">Avg mood (30d)</p>
+    <div class="stat-card card" appMotion>
+      <p class="muted small">Spiritual progress</p>
       <div class="stat-value">
-        {{ summary.averageMoodLast30Days != null ? (summary.averageMoodLast30Days | number:'1.1-1') : '—' }}
+        {{ summary.spiritualProgressScore != null ? (summary.spiritualProgressScore | number:'1.0-0') + '%' : '-' }}
       </div>
-      <p class="muted tiny">Self-rated mood over last month.</p>
+      <p class="muted tiny">Composite of consistency, feeling, and categories.</p>
     </div>
-    <div class="stat-card card">
+    <div class="stat-card card" appMotion>
+      <p class="muted small">Avg feeling (30d)</p>
+      <div class="stat-value">
+        {{ summary.averageMoodLast30Days != null ? (summary.averageMoodLast30Days | number:'1.1-1') : '-' }}
+      </div>
+      <p class="muted tiny">Average feeling rating over last month.</p>
+    </div>
+    <div class="stat-card card" appMotion>
       <p class="muted small">Sessions this week</p>
       <div class="stat-value">{{ summary.sessionsThisWeek || 0 }}</div>
       <p class="muted tiny">Completed in the last 7 days.</p>
@@ -49,7 +56,92 @@
     No summary yet. Complete an examination session to see your metrics.
   </div>
 
-  <div class="card" *ngIf="sessions.length">
+  <section class="growth card" appMotion>
+    <div class="growth-header">
+      <div>
+        <p class="overline">Growth</p>
+        <h2>Weekly practices</h2>
+        <p class="muted small">Gratitude, habits, and weekly summaries in one place.</p>
+      </div>
+      <button class="btn btn-ghost" type="button" (click)="downloadReport()">Export PDF</button>
+    </div>
+
+    <div class="alert" *ngIf="growthLoading">Loading growth data...</div>
+    <div class="alert error" *ngIf="growthError">{{ growthError }}</div>
+
+    <div class="growth-grid" *ngIf="!growthLoading">
+      <div class="growth-panel">
+        <p class="overline">Weekly summary</p>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <p class="muted tiny">Sessions</p>
+            <div class="stat-value">{{ weeklyGrowth?.sessionsCompleted || 0 }}</div>
+          </div>
+          <div class="summary-item">
+            <p class="muted tiny">Todos</p>
+            <div class="stat-value">{{ weeklyGrowth?.todosCompleted || 0 }}</div>
+          </div>
+          <div class="summary-item">
+            <p class="muted tiny">Habits scored</p>
+            <div class="stat-value">{{ weeklyGrowth?.habitsScored || 0 }}</div>
+          </div>
+          <div class="summary-item">
+            <p class="muted tiny">Avg habit score</p>
+            <div class="stat-value">
+              {{ weeklyGrowth?.averageHabitScore != null ? (weeklyGrowth?.averageHabitScore | number:'1.1-1') : '-' }}
+            </div>
+          </div>
+          <div class="summary-item">
+            <p class="muted tiny">Gratitude</p>
+            <div class="stat-value">{{ weeklyGrowth?.gratitudeCount || 0 }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="growth-panel">
+        <p class="overline">Meditation suggestions</p>
+        <ul class="suggestion-list">
+          <li *ngFor="let s of suggestions">{{ s }}</li>
+        </ul>
+        <div class="empty-state" *ngIf="!suggestions.length">No suggestions available.</div>
+      </div>
+
+      <div class="growth-panel">
+        <p class="overline">Gratitude</p>
+        <div class="inline-form">
+          <input type="text" [(ngModel)]="gratitudeDraft" placeholder="Add a gratitude note" />
+          <button class="btn btn-primary" type="button" (click)="addGratitude()">Add</button>
+        </div>
+        <div class="entry-list" *ngIf="gratitudePreview.length">
+          <div class="entry-row" *ngFor="let entry of gratitudePreview">
+            <div>{{ entry.content }}</div>
+            <span class="muted tiny">{{ entry.createdAt | date:'medium' }}</span>
+          </div>
+        </div>
+        <div class="empty-state" *ngIf="!gratitudePreview.length">No gratitude entries yet.</div>
+      </div>
+
+      <div class="growth-panel">
+        <p class="overline">Habit score</p>
+        <div class="inline-form">
+          <input type="text" [(ngModel)]="habitDraft" placeholder="Habit name" />
+          <select [(ngModel)]="habitScore">
+            <option *ngFor="let score of [1,2,3,4,5]" [ngValue]="score">{{ score }}</option>
+          </select>
+          <button class="btn btn-primary" type="button" (click)="addHabitScore()">Save</button>
+        </div>
+        <div class="entry-list" *ngIf="habitPreview.length">
+          <div class="entry-row" *ngFor="let entry of habitPreview">
+            <div>{{ entry.habit }} - {{ entry.score }}/5</div>
+            <span class="muted tiny">{{ entry.scoreDate | date:'mediumDate' }}</span>
+          </div>
+        </div>
+        <div class="empty-state" *ngIf="!habitPreview.length">No habit scores yet.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="card" *ngIf="sessions.length" appMotion>
     <p class="overline">Recent sessions</p>
     <div class="recent-list">
       <div class="recent-item" *ngFor="let s of sessions">
@@ -64,13 +156,13 @@
     </div>
   </div>
 
-  <div class="card" *ngIf="summary">
+  <div class="card" *ngIf="summary" appMotion>
     <div class="today-header">
       <div>
         <p class="overline">Today</p>
         <h2>{{ summary.todayCompleted ? 'Completed' : 'Not completed yet' }}</h2>
         <p class="muted small">
-          {{ summary.todayMood ? ('Mood ' + summary.todayMood + '/5') : 'No mood logged yet' }}
+          {{ summary.todayMood ? ('Feeling ' + summary.todayMood + '/5') : 'No feeling logged yet' }}
         </p>
       </div>
       <div class="today-actions">
@@ -80,7 +172,7 @@
     </div>
 
     <div class="mood-trend" *ngIf="summary.recentMoodTrend?.length">
-      <p class="overline">Mood trend (last 14 days)</p>
+      <p class="overline">Feeling trend (last 14 days)</p>
       <div class="trend-bars">
         <div class="trend-bar" *ngFor="let point of summary.recentMoodTrend">
           <div class="bar" [style.height.%]="(point.mood || 0) * 20"></div>
@@ -90,7 +182,7 @@
     </div>
   </div>
 
-  <div class="card" *ngIf="progress.length">
+  <div class="card" *ngIf="progress.length" appMotion>
     <p class="overline">Completion trend (14 days)</p>
     <div class="trend-bars">
       <div class="trend-bar" *ngFor="let point of progress">
@@ -100,25 +192,25 @@
     </div>
   </div>
 
-  <div class="card" *ngIf="analytics">
+  <div class="card" *ngIf="analytics" appMotion>
     <p class="overline">Insights (last 30 days)</p>
     <div class="insight-grid">
       <div>
-        <p class="muted tiny">Overall score</p>
+        <p class="muted tiny">Overall feeling score</p>
         <div class="stat-value">
-          {{ analytics.overallAverageScore != null ? (analytics.overallAverageScore | number:'1.0-0') + '%' : '—' }}
+          {{ analytics.overallAverageScore != null ? (analytics.overallAverageScore | number:'1.0-0') + '%' : '-' }}
         </div>
       </div>
       <div>
-        <p class="muted tiny">Average mood</p>
+        <p class="muted tiny">Average feeling</p>
         <div class="stat-value">
-          {{ analytics.overallMood != null ? (analytics.overallMood | number:'1.1-1') : '—' }}
+          {{ analytics.overallMood != null ? (analytics.overallMood | number:'1.1-1') : '-' }}
         </div>
       </div>
     </div>
   </div>
 
-  <div class="card" *ngIf="analytics?.categories?.length">
+  <div class="card" *ngIf="analytics?.categories?.length" appMotion>
     <p class="overline">Category breakdown</p>
     <div class="category-list">
       <div class="category-row" *ngFor="let c of analytics?.categories || []">
@@ -130,38 +222,37 @@
           <div class="bar-fill" [style.width.%]="c.averageScore || 0"></div>
         </div>
         <div class="muted tiny score-text">
-          {{ c.averageScore != null ? (c.averageScore | number:'1.0-0') + '%' : '—' }} •
-          Yes: {{ c.yesRate != null ? (c.yesRate | number:'1.0-0') + '%' : '—' }}
+          Feeling score: {{ c.averageScore != null ? (c.averageScore | number:'1.0-0') + '%' : '-' }}
         </div>
       </div>
     </div>
   </div>
 
-  <div class="card" *ngIf="analytics?.weeklyTrend?.length">
+  <div class="card" *ngIf="analytics?.weeklyTrend?.length" appMotion>
     <p class="overline">Weekly trend</p>
     <div class="trend-bars">
       <div class="trend-bar" *ngFor="let w of analytics?.weeklyTrend || []">
         <div class="bar completed" [style.height.%]="(w.sessions || 0) * 15"></div>
         <span class="muted tiny">{{ w.weekStart | date:'MM/dd' }}</span>
-        <span class="muted tiny">Mood {{ w.averageMood != null ? (w.averageMood | number:'1.1-1') : '—' }}</span>
+        <span class="muted tiny">Feeling {{ w.averageMood != null ? (w.averageMood | number:'1.1-1') : '-' }}</span>
       </div>
     </div>
   </div>
 
-  <div class="card" *ngIf="weekly || monthly">
+  <div class="card" *ngIf="weekly || monthly" appMotion>
     <p class="overline">Period summaries</p>
     <div class="period-grid">
       <div class="period-card" *ngIf="weekly">
         <p class="muted small">This week</p>
         <div class="stat-value">{{ weekly.sessions }}</div>
-        <p class="muted tiny">Sessions • {{ weekly.completedDays }} days</p>
-        <p class="muted tiny">Avg mood: {{ weekly.averageMood != null ? (weekly.averageMood | number:'1.1-1') : '—' }}</p>
+        <p class="muted tiny">Sessions - {{ weekly.completedDays }} days</p>
+        <p class="muted tiny">Avg feeling: {{ weekly.averageMood != null ? (weekly.averageMood | number:'1.1-1') : '-' }}</p>
       </div>
       <div class="period-card" *ngIf="monthly">
         <p class="muted small">This month</p>
         <div class="stat-value">{{ monthly.sessions }}</div>
-        <p class="muted tiny">Sessions • {{ monthly.completedDays }} days</p>
-        <p class="muted tiny">Avg mood: {{ monthly.averageMood != null ? (monthly.averageMood | number:'1.1-1') : '—' }}</p>
+        <p class="muted tiny">Sessions - {{ monthly.completedDays }} days</p>
+        <p class="muted tiny">Avg feeling: {{ monthly.averageMood != null ? (monthly.averageMood | number:'1.1-1') : '-' }}</p>
       </div>
     </div>
   </div>

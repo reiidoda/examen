@@ -1,18 +1,23 @@
 .auth-layout {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 32px;
-  align-items: center;
-  padding: 24px 0;
+  gap: var(--space-xl);
+  align-items: start;
+  padding: var(--space-xl) 0;
+}
+
+.auth-hero {
+  max-width: 520px;
 }
 
 .auth-hero h1 {
-  margin: 10px 0 8px;
-  font-size: clamp(26px, 3vw, 34px);
+  margin: 0 0 var(--space-sm);
+  font-size: clamp(30px, 4vw, 42px);
+  line-height: 1.2;
 }
 
 .auth-card {
-  padding: 24px;
+  padding: clamp(20px, 3vw, 32px);
 }
 
 .auth-header {
@@ -21,18 +26,6 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
-}
-
-.overline {
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 12px;
-  color: var(--text-muted);
-  margin: 0 0 4px;
-}
-
-.small {
-  font-size: 14px;
 }
 
 .helper {

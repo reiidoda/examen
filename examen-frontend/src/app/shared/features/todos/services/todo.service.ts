@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../../../environments/environment';
+import { ApiConfigService } from '../../../../core/services/api-config.service';
 
 export interface Todo {
   id: number;
@@ -14,9 +14,14 @@ export interface Todo {
   providedIn: 'root'
 })
 export class TodoService {
-  private baseUrl = `${environment.apiUrl}/todos`;
+  private baseUrl: string;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private api: ApiConfigService
+  ) {
+    this.baseUrl = this.api.endpoint('todos');
+  }
 
   getAll(): Observable<Todo[]> {
     return this.http.get<Todo[]>(this.baseUrl);

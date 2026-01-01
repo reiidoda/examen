@@ -6,12 +6,14 @@ import com.rei.examenbackend.dto.auth.RegisterRequest;
 import com.rei.examenbackend.dto.auth.PasswordResetRequest;
 import com.rei.examenbackend.dto.auth.PasswordResetConfirmRequest;
 import com.rei.examenbackend.exception.ApiException;
+import com.rei.examenbackend.config.PasswordResetProperties;
 import com.rei.examenbackend.model.Role;
 import com.rei.examenbackend.model.User;
 import com.rei.examenbackend.model.PasswordResetToken;
 import com.rei.examenbackend.repository.UserRepository;
 import com.rei.examenbackend.repository.PasswordResetTokenRepository;
 import com.rei.examenbackend.service.AuthenticationService;
+import com.rei.examenbackend.service.PasswordResetMailService;
 import com.rei.examenbackend.config.JwtService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,6 +33,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authManager;
+    private final PasswordResetMailService passwordResetMailService;
+    private final PasswordResetProperties passwordResetProperties;
     private static final Pattern STRONG_PASSWORD = Pattern.compile("^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}$");
 
     public AuthenticationServiceImpl(
@@ -38,13 +42,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             PasswordResetTokenRepository passwordResetTokenRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
-            AuthenticationManager authManager
+            AuthenticationManager authManager,
+            PasswordResetMailService passwordResetMailService,
+            PasswordResetProperties passwordResetProperties
     ) {
         this.userRepository = userRepository;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authManager = authManager;
+        this.passwordResetMailService = passwordResetMailService;
+        this.passwordResetProperties = passwordResetProperties;
     }
 
     @Override
@@ -105,20 +113,27 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public String requestPasswordReset(PasswordResetRequest request) {
+    public void requestPasswordReset(PasswordResetRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found"));
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime windowStart = now.minusMinutes(passwordResetProperties.getWindowMinutes());
+        long recentRequests = passwordResetTokenRepository.countByUserAndCreatedAtAfter(user, windowStart);
+        if (recentRequests >= passwordResetProperties.getMaxRequests()) {
+            throw new ApiException(HttpStatus.TOO_MANY_REQUESTS, "Too many reset requests. Try again later.");
+        }
 
         String token = UUID.randomUUID().toString();
         PasswordResetToken resetToken = PasswordResetToken.builder()
                 .token(token)
                 .user(user)
-                .expiresAt(LocalDateTime.now().plusHours(1))
+                .createdAt(now)
+                .expiresAt(now.plusMinutes(passwordResetProperties.getTokenTtlMinutes()))
                 .used(false)
                 .build();
         passwordResetTokenRepository.save(resetToken);
-        // In production, send token via email instead of returning
-        return token;
+        passwordResetMailService.sendResetEmail(user, token);
     }
 
     @Override

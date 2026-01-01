@@ -1,35 +1,37 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { Category, CategoryService } from '../../../../categories/category-list/services/category.service';
 import { Question, QuestionService } from '../../../../core/services/question.service';
+import { MotionDirective } from '../../../motion/motion.directive';
 
 @Component({
   selector: 'app-custom-questions',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, MotionDirective],
   templateUrl: './custom-questions.component.html',
   styleUrls: ['./custom-questions.component.scss']
 })
 export class CustomQuestionsComponent implements OnInit {
   form!: FormGroup;
+  categoryForm!: FormGroup;
   categories: Category[] = [];
-  questions: Question[] = [];
+  aiQuestions: Question[] = [];
+  customQuestions: Question[] = [];
   loading = false;
   error = '';
-  minRequired = 5;
+  editingId: number | null = null;
+  categoryEditingId: number | null = null;
+  categorySaving = false;
+  categoryError = '';
 
-  responseTypes = [
-    { value: 'YES_NO', label: 'Yes / No' },
-    { value: 'SCALE_1_5', label: 'Scale 1-5' }
-  ];
-
-  get totalCount(): number {
-    return this.questions.length;
+  get isEditing(): boolean {
+    return this.editingId !== null;
   }
 
-  get defaultCount(): number {
-    return this.questions.filter(q => !q.custom).length;
+  get isCategoryEditing(): boolean {
+    return this.categoryEditingId !== null;
   }
 
   constructor(
@@ -39,8 +41,11 @@ export class CustomQuestionsComponent implements OnInit {
   ) {
     this.form = this.fb.group({
       text: ['', [Validators.required, Validators.maxLength(500)]],
-      categoryId: [null, Validators.required],
-      responseType: ['YES_NO', Validators.required]
+      categoryId: [null, Validators.required]
+    });
+    this.categoryForm = this.fb.group({
+      name: ['', [Validators.required, Validators.maxLength(120)]],
+      description: ['', [Validators.maxLength(240)]]
     });
   }
 
@@ -50,17 +55,24 @@ export class CustomQuestionsComponent implements OnInit {
   }
 
   loadCategories(): void {
+    this.categoryError = '';
     this.categoryService.getAll().subscribe({
-      next: res => (this.categories = res),
-      error: () => (this.error = 'Failed to load categories')
+      next: res => (this.categories = [...res].sort((a, b) => a.name.localeCompare(b.name))),
+      error: () => (this.categoryError = 'Failed to load categories')
     });
   }
 
   loadQuestions(): void {
     this.loading = true;
-    this.questionService.getAll().subscribe({
+    this.error = '';
+
+    forkJoin({
+      all: this.questionService.getAll(200),
+      mine: this.questionService.getMine()
+    }).subscribe({
       next: res => {
-        this.questions = res;
+        this.aiQuestions = (res.all || []).filter(q => !q.custom);
+        this.customQuestions = res.mine || [];
         this.loading = false;
       },
       error: () => {
@@ -74,39 +86,132 @@ export class CustomQuestionsComponent implements OnInit {
     if (this.form.invalid) return;
     this.loading = true;
     this.error = '';
-    this.questionService.createCustom(this.form.value).subscribe({
+
+    const payload = this.form.value;
+
+    const request$ = this.isEditing && this.editingId
+      ? this.questionService.updateCustom(this.editingId, payload)
+      : this.questionService.createCustom(payload);
+
+    request$.subscribe({
       next: q => {
-        this.questions = [q, ...this.questions];
-        this.form.reset({ responseType: 'YES_NO' });
+        if (this.isEditing && this.editingId) {
+          this.customQuestions = this.customQuestions.map(item =>
+            item.id === this.editingId ? q : item
+          );
+        } else {
+          this.customQuestions = [q, ...this.customQuestions];
+        }
+        this.resetForm();
         this.loading = false;
       },
-      error: () => {
-        this.error = 'Could not create question';
+      error: (err) => {
+        this.error = err.error?.message || 'Could not save question';
         this.loading = false;
       }
     });
   }
 
+  startEdit(question: Question): void {
+    if (!question.id) return;
+    this.editingId = question.id;
+    this.form.patchValue({
+      text: question.text,
+      categoryId: question.category?.id || null
+    });
+  }
+
+  cancelEdit(): void {
+    this.resetForm();
+  }
+
   delete(question: Question): void {
     if (!question.id) return;
-    if (this.questions.length <= this.minRequired) {
-      this.error = `At least ${this.minRequired} questions must remain.`;
-      return;
-    }
-    if (!question.custom) {
-      this.error = 'Default questions cannot be deleted.';
-      return;
-    }
+    if (!confirm('Delete this question?')) return;
 
-    const deleteCall = this.questionService.deleteCustom(question.id);
-
-    deleteCall.subscribe({
+    this.questionService.deleteCustom(question.id).subscribe({
       next: () => {
-        this.questions = this.questions.filter(q => q.id !== question.id);
+        this.customQuestions = this.customQuestions.filter(q => q.id !== question.id);
+        if (this.editingId === question.id) {
+          this.resetForm();
+        }
       },
       error: (err) => {
         this.error = err.error?.message || 'Could not delete question';
       }
     });
+  }
+
+  submitCategory(): void {
+    if (this.categoryForm.invalid) return;
+    this.categorySaving = true;
+    this.categoryError = '';
+
+    const payload = this.categoryForm.value as Category;
+    const request$ = this.isCategoryEditing && this.categoryEditingId
+      ? this.categoryService.update(this.categoryEditingId, payload)
+      : this.categoryService.create(payload);
+
+    request$.subscribe({
+      next: category => {
+        if (this.isCategoryEditing && this.categoryEditingId) {
+          this.categories = this.categories.map(item =>
+            item.id === this.categoryEditingId ? category : item
+          );
+        } else {
+          this.categories = [category, ...this.categories];
+        }
+        this.categories = [...this.categories].sort((a, b) => a.name.localeCompare(b.name));
+        this.resetCategoryForm();
+        this.categorySaving = false;
+      },
+      error: (err) => {
+        this.categoryError = err.error?.message || 'Could not save category';
+        this.categorySaving = false;
+      }
+    });
+  }
+
+  startCategoryEdit(category: Category): void {
+    if (!category.id) return;
+    this.categoryEditingId = category.id;
+    this.categoryForm.patchValue({
+      name: category.name,
+      description: category.description
+    });
+  }
+
+  cancelCategoryEdit(): void {
+    this.resetCategoryForm();
+  }
+
+  deleteCategory(category: Category): void {
+    if (!category.id) return;
+    if (!confirm('Delete this category?')) return;
+
+    this.categoryService.delete(category.id).subscribe({
+      next: () => {
+        this.categories = this.categories.filter(c => c.id !== category.id);
+        if (this.categoryEditingId === category.id) {
+          this.resetCategoryForm();
+        }
+        if (this.form.value.categoryId === category.id) {
+          this.form.patchValue({ categoryId: null });
+        }
+      },
+      error: (err) => {
+        this.categoryError = err.error?.message || 'Could not delete category';
+      }
+    });
+  }
+
+  private resetForm(): void {
+    this.editingId = null;
+    this.form.reset();
+  }
+
+  private resetCategoryForm(): void {
+    this.categoryEditingId = null;
+    this.categoryForm.reset({ name: '', description: '' });
   }
 }

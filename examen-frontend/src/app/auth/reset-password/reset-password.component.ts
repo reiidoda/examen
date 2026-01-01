@@ -26,14 +26,18 @@ export class ResetPasswordComponent {
     this.loading = true;
     this.error = '';
     this.authService.requestPasswordReset({ email: this.email }).subscribe({
-      next: t => {
-        this.token = t;
-        this.message = 'Reset token generated. Use it below.';
+      next: () => {
+        this.token = '';
+        this.message = 'Check your email for a reset link or code. Enter it below to continue.';
         this.step = 'confirm';
         this.loading = false;
       },
-      error: () => {
-        this.error = 'Could not generate reset token';
+      error: (err) => {
+        if (err.status === 429) {
+          this.error = 'Too many reset requests. Please wait and try again.';
+        } else {
+          this.error = 'Could not request a password reset.';
+        }
         this.loading = false;
       }
     });

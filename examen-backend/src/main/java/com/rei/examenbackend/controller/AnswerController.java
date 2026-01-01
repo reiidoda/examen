@@ -3,6 +3,7 @@ package com.rei.examenbackend.controller;
 import com.rei.examenbackend.dto.answer.AnswerRequest;
 import com.rei.examenbackend.dto.answer.AnswerResponse;
 import com.rei.examenbackend.service.AnswerService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,14 +18,14 @@ public class AnswerController {
     private final AnswerService answerService;
 
     @PostMapping
-    public ResponseEntity<AnswerResponse> create(@RequestBody AnswerRequest request) {
+    public ResponseEntity<AnswerResponse> create(@Valid @RequestBody AnswerRequest request) {
         return ResponseEntity.ok(answerService.create(request));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<AnswerResponse> update(
             @PathVariable Long id,
-            @RequestBody AnswerRequest request
+            @Valid @RequestBody AnswerRequest request
     ) {
         return ResponseEntity.ok(answerService.update(id, request));
     }

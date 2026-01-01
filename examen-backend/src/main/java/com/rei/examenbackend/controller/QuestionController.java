@@ -67,6 +67,15 @@ public class QuestionController {
         return ResponseEntity.ok(questionService.createCustom(request, user));
     }
 
+    @PutMapping("/custom/{id}")
+    public ResponseEntity<QuestionResponse> updateCustom(
+            @PathVariable Long id,
+            @Valid @RequestBody QuestionRequest request,
+            @AuthenticationPrincipal User user
+    ) {
+        return ResponseEntity.ok(questionService.updateMine(id, request, user));
+    }
+
     @GetMapping("/my")
     public ResponseEntity<List<QuestionResponse>> getMine(@AuthenticationPrincipal User user) {
         return ResponseEntity.ok(questionService.getMine(user));

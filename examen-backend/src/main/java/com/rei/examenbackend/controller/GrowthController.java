@@ -10,6 +10,7 @@ import com.rei.examenbackend.repository.HabitScoreRepository;
 import com.rei.examenbackend.repository.ExaminationSessionRepository;
 import com.rei.examenbackend.repository.ToDoItemRepository;
 import com.rei.examenbackend.repository.UserRepository;
+import com.rei.examenbackend.service.GrowthReportService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,17 +31,20 @@ public class GrowthController {
     private final ExaminationSessionRepository sessionRepo;
     private final ToDoItemRepository todoRepo;
     private final UserRepository userRepo;
+    private final GrowthReportService growthReportService;
 
     public GrowthController(GratitudeEntryRepository gratitudeRepo,
                             HabitScoreRepository habitRepo,
                             ExaminationSessionRepository sessionRepo,
                             ToDoItemRepository todoRepo,
-                            UserRepository userRepo) {
+                            UserRepository userRepo,
+                            GrowthReportService growthReportService) {
         this.gratitudeRepo = gratitudeRepo;
         this.habitRepo = habitRepo;
         this.sessionRepo = sessionRepo;
         this.todoRepo = todoRepo;
         this.userRepo = userRepo;
+        this.growthReportService = growthReportService;
     }
 
     @PostMapping("/gratitude")
@@ -83,6 +87,23 @@ public class GrowthController {
         return ResponseEntity.ok(new HabitScoreResponse(score.getId(), score.getHabit(), score.getScore(), score.getScoreDate()));
     }
 
+    @GetMapping("/habits")
+    public ResponseEntity<List<HabitScoreResponse>> listHabits(@AuthenticationPrincipal User user,
+                                                               @RequestParam(defaultValue = "30") int days) {
+        User persisted = userRepo.findById(user.getId())
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found"));
+        int safeDays = Math.min(Math.max(days, 1), 365);
+        LocalDate today = LocalDate.now();
+        LocalDate start = today.minusDays(safeDays - 1);
+
+        var scores = habitRepo.findByUserAndScoreDateBetweenOrderByScoreDateDesc(persisted, start, today)
+                .stream()
+                .map(score -> new HabitScoreResponse(score.getId(), score.getHabit(), score.getScore(), score.getScoreDate()))
+                .toList();
+
+        return ResponseEntity.ok(scores);
+    }
+
     @GetMapping("/weekly-summary")
     public ResponseEntity<WeeklySummaryResponse> weeklySummary(@AuthenticationPrincipal User user) {
         User persisted = userRepo.findById(user.getId())
@@ -119,9 +140,7 @@ public class GrowthController {
 
     @GetMapping(value = "/export/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> exportPdf(@AuthenticationPrincipal User user) {
-        // Simple placeholder PDF generation (plain text PDF header)
-        String content = "Examen Summary\nUser: " + user.getFullName() + "\nGenerated: " + LocalDateTime.now();
-        byte[] pdfBytes = content.getBytes();
+        byte[] pdfBytes = growthReportService.buildReport(user);
         return ResponseEntity.ok()
                 .header("Content-Disposition", "attachment; filename=examen-summary.pdf")
                 .body(pdfBytes);

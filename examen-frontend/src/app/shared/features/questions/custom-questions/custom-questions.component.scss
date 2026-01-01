@@ -1,9 +1,160 @@
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
+.library-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(320px, 1.1fr);
+  align-items: start;
 }
 
-table td.actions {
+.library-guide {
+  display: grid;
+  gap: 12px;
+}
+
+.guide-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+.guide-blocks {
+  display: grid;
+  gap: 12px;
+}
+
+.guide-block {
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.guide-block h3 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.guide-block p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.question-form {
+  display: grid;
+  gap: 16px;
+  position: sticky;
+  top: calc(72px + var(--space-sm));
+  align-self: start;
+}
+
+.form-header {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(0, 113, 227, 0.12);
+  background: linear-gradient(135deg, rgba(0, 113, 227, 0.08), rgba(0, 0, 0, 0.02));
+}
+
+.form-header p {
+  margin: 0;
+}
+
+.form-header h2 {
+  margin: 2px 0 0;
+  font-size: clamp(20px, 2.2vw, 24px);
+  line-height: 1.25;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.library-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.library-section {
+  display: grid;
+  gap: 10px;
+}
+
+.question-list {
+  display: grid;
+  gap: 12px;
+}
+
+.question-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.question-row:last-child {
+  border-bottom: none;
+}
+
+.question-text {
+  font-weight: 600;
+}
+
+.actions {
   display: flex;
   gap: 8px;
+}
+
+.category-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.category-form {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.category-list {
+  display: grid;
+  gap: 12px;
+}
+
+.category-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.category-row:last-child {
+  border-bottom: none;
+}
+
+.category-name {
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .library-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .guide-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .question-form {
+    position: static;
+    top: auto;
+  }
 }

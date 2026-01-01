@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { environment } from '../../../../../environments/environment';
+import { ApiConfigService } from '../../../../core/services/api-config.service';
 import {
   Category,
   PageResponse,
@@ -15,11 +15,18 @@ import {
   providedIn: 'root'
 })
 export class ExaminationService {
-  private baseUrl = `${environment.apiUrl}/sessions`;
-  private categoryUrl = `${environment.apiUrl}/categories`;
-  private questionUrl = `${environment.apiUrl}/questions`;
+  private baseUrl: string;
+  private categoryUrl: string;
+  private questionUrl: string;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private api: ApiConfigService
+  ) {
+    this.baseUrl = this.api.endpoint('sessions');
+    this.categoryUrl = this.api.endpoint('categories');
+    this.questionUrl = this.api.endpoint('questions');
+  }
 
   getActiveSession(): Observable<SessionSummary | null> {
     return this.http.get<SessionSummary | null>(`${this.baseUrl}/active`);

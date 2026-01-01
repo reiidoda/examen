@@ -29,9 +29,9 @@ public class AuthenticationController {
     }
 
     @PostMapping("/reset/request")
-    public ResponseEntity<String> requestReset(@Valid @RequestBody PasswordResetRequest request) {
-        String token = authService.requestPasswordReset(request);
-        return ResponseEntity.ok(token); // In production, email this token instead of returning it.
+    public ResponseEntity<Void> requestReset(@Valid @RequestBody PasswordResetRequest request) {
+        authService.requestPasswordReset(request);
+        return ResponseEntity.accepted().build();
     }
 
     @PostMapping("/reset/confirm")

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { environment } from '../../../../environments/environment';
+import { ApiConfigService } from '../../../core/services/api-config.service';
 
 export interface Category {
   id?: number;
@@ -18,9 +18,14 @@ interface PageResponse<T> {
   providedIn: 'root'
 })
 export class CategoryService {
-  private baseUrl = `${environment.apiUrl}/categories`;
+  private baseUrl: string;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private api: ApiConfigService
+  ) {
+    this.baseUrl = this.api.endpoint('categories');
+  }
 
   getAll(): Observable<Category[]> {
     return this.http

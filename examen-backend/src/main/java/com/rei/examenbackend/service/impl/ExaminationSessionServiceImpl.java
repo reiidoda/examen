@@ -97,6 +97,8 @@ public class ExaminationSessionServiceImpl implements ExaminationSessionService 
             return Answer.builder()
                     .answerText(req.getAnswerText())
                     .correct(req.isCorrect())
+                    .reflectionText(req.getReflectionText())
+                    .feelingScore(req.getFeelingScore())
                     .question(q)
                     .examinationSession(session)
                     .build();
@@ -107,11 +109,23 @@ public class ExaminationSessionServiceImpl implements ExaminationSessionService 
 
         session.setAnswers(answerEntities);
         session.setCompletedAt(LocalDateTime.now());
+        Integer moodScore = request.getMoodScore();
+        if (moodScore == null) {
+            var feelingAvg = answerEntities.stream()
+                    .map(Answer::getFeelingScore)
+                    .filter(java.util.Objects::nonNull)
+                    .mapToInt(Integer::intValue)
+                    .average();
+            moodScore = feelingAvg.isPresent()
+                    ? (int) Math.round(feelingAvg.getAsDouble())
+                    : null;
+        }
+
         session.setNotes(request.getNotes());
-        session.setMoodScore(request.getMoodScore());
+        session.setMoodScore(moodScore);
         sessionRepository.save(session);
 
-        upsertDaily(session, request.getNotes(), request.getMoodScore());
+        upsertDaily(session, request.getNotes(), moodScore);
 
         return toResponse(session);
     }
@@ -164,6 +178,8 @@ public class ExaminationSessionServiceImpl implements ExaminationSessionService 
                                                 .id(a.getId())
                                                 .answerText(a.getAnswerText())
                                                 .correct(a.isCorrect())
+                                                .reflectionText(a.getReflectionText())
+                                                .feelingScore(a.getFeelingScore())
                                                 .questionId(a.getQuestion().getId())
                                                 .examinationSessionId(session.getId())
                                                 .build()
@@ -204,6 +220,12 @@ public class ExaminationSessionServiceImpl implements ExaminationSessionService 
     }
 
     private OptionalDouble calculateAnswerScore(Answer answer) {
+        Integer feelingScore = answer.getFeelingScore();
+        if (feelingScore != null) {
+            double normalized = ((double) (feelingScore - 1) / 4d) * 100d;
+            return OptionalDouble.of(normalized);
+        }
+
         Question question = answer.getQuestion();
         String response = answer.getAnswerText();
         if (response == null) {

@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
-import { environment } from '../../../../../environments/environment';
+import { ApiConfigService } from '../../../../core/services/api-config.service';
 
 export interface ProfileSummary {
   examinationsCompleted: number;
   todosCompleted: number;
   categoriesUsed: number;
   streakDays: number;
+  spiritualProgressScore?: number | null;
   averageMoodLast30Days?: number | null;
   todayMood?: number | null;
   sessionsThisWeek?: number;
@@ -63,10 +64,15 @@ export interface ProfileAnalytics {
   providedIn: 'root'
 })
 export class ProfileService {
-  private baseUrl = `${environment.apiUrl}/profile`;
+  private baseUrl: string;
   refresh$ = new Subject<void>();
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private api: ApiConfigService
+  ) {
+    this.baseUrl = this.api.endpoint('profile');
+  }
 
   /**
    * Loads summary for the last 30 days (as your backend does).

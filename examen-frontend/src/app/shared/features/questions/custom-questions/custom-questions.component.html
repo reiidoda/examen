@@ -2,72 +2,158 @@
   <div class="page-header">
     <div>
       <p class="overline">Questions</p>
-      <h1>Your custom questions</h1>
-      <p class="muted small">Add personal prompts that appear in your examinations.</p>
-      <p class="muted tiny">Note: At least {{ minRequired }} questions must remain. The 5 default questions cannot be deleted.</p>
+      <h1>AI prompts + your custom library</h1>
+      <p class="muted small">Edit, add, and organize questions for each examination.</p>
+    </div>
+    <div class="chip-row">
+      <span class="pill">{{ aiQuestions.length }} AI</span>
+      <span class="pill">{{ customQuestions.length }} custom</span>
+      <span class="pill">{{ categories.length }} categories</span>
     </div>
   </div>
 
-  <div class="card">
-    <form class="form-grid" [formGroup]="form" (ngSubmit)="submit()">
-      <div class="form-field">
-        <label for="text">Question</label>
-        <input id="text" formControlName="text" placeholder="What lifted your energy today?" />
+  <section class="library-guide card" appMotion>
+    <div class="guide-grid">
+      <div>
+        <p class="overline">How it works</p>
+        <h2>Build the question library</h2>
+        <p class="muted small">
+          AI prompts are read-only and always available. Your custom questions can be edited,
+          grouped into categories, and used in daily sessions.
+        </p>
+      </div>
+      <div class="guide-blocks">
+        <div class="guide-block">
+          <h3>Categories</h3>
+          <p>Categories shape the scoring breakdown in your profile analytics.</p>
+        </div>
+        <div class="guide-block">
+          <h3>Response format</h3>
+          <p>Each prompt collects a reflection and a feeling rating.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="library-grid">
+    <div class="card question-form">
+      <div class="form-header">
+        <div>
+          <p class="overline">{{ isEditing ? 'Edit question' : 'Add question' }}</p>
+          <h2>{{ isEditing ? 'Update your custom prompt' : 'Create a custom prompt' }}</h2>
+          <p class="muted small">Choose a category and save the prompt.</p>
+        </div>
       </div>
 
-      <div class="form-field">
-        <label for="category">Category</label>
-        <select id="category" formControlName="categoryId">
-          <option [ngValue]="null" disabled>Select a category</option>
-          <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
-        </select>
-      </div>
+      <form class="form-grid" [formGroup]="form" (ngSubmit)="submit()">
+        <div class="form-field">
+          <label for="text">Question text</label>
+          <textarea id="text" rows="3" placeholder="Write the prompt" formControlName="text"></textarea>
+        </div>
+        <div class="form-field">
+          <label for="categoryId">Category</label>
+          <select id="categoryId" formControlName="categoryId">
+            <option [ngValue]="null" disabled>Select a category</option>
+            <option *ngFor="let category of categories" [ngValue]="category.id">
+              {{ category.name }}
+            </option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit" [disabled]="loading || form.invalid">
+            {{ isEditing ? 'Save changes' : 'Add question' }}
+          </button>
+          <button class="btn btn-ghost" type="button" *ngIf="isEditing" (click)="cancelEdit()">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
 
-      <div class="form-field">
-        <label for="type">Response type</label>
-        <select id="type" formControlName="responseType">
-          <option *ngFor="let type of responseTypes" [value]="type.value">
-            {{ type.label }}
-          </option>
-        </select>
-      </div>
-
+    <div class="card library-panel" appMotion>
       <div class="alert error" *ngIf="error">{{ error }}</div>
+      <div class="alert" *ngIf="loading">Loading questions...</div>
 
+      <div class="library-section" *ngIf="aiQuestions.length">
+        <p class="overline">AI question library</p>
+        <div class="question-list">
+          <div class="question-row" *ngFor="let q of aiQuestions">
+            <div>
+              <div class="question-text">{{ q.text }}</div>
+              <div class="muted tiny">{{ q.category?.name || 'Reflection' }} - Reflection + feeling</div>
+            </div>
+            <span class="tag tag-muted">AI</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="library-section" *ngIf="customQuestions.length">
+        <p class="overline">Your questions</p>
+        <div class="question-list">
+          <div class="question-row" *ngFor="let q of customQuestions">
+            <div>
+              <div class="question-text">{{ q.text }}</div>
+              <div class="muted tiny">{{ q.category?.name || 'Reflection' }} - Reflection + feeling</div>
+            </div>
+            <div class="actions">
+              <button class="btn btn-ghost tiny" type="button" (click)="startEdit(q)">Edit</button>
+              <button class="btn btn-ghost tiny" type="button" (click)="delete(q)">Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="!customQuestions.length && !loading">
+        No custom questions yet. Add one to personalize your examen.
+      </div>
+    </div>
+  </div>
+
+  <div class="card category-panel" appMotion>
+    <div class="category-header">
+      <div>
+        <p class="overline">Categories</p>
+        <h2>{{ isCategoryEditing ? 'Edit category' : 'Create a category' }}</h2>
+        <p class="muted small">Group questions by theme for focused examinations.</p>
+      </div>
+    </div>
+
+    <form class="category-form" [formGroup]="categoryForm" (ngSubmit)="submitCategory()">
+      <div class="form-field">
+        <label for="categoryName">Name</label>
+        <input id="categoryName" type="text" formControlName="name" placeholder="Ex: Gratitude" />
+      </div>
+      <div class="form-field">
+        <label for="categoryDescription">Description</label>
+        <input id="categoryDescription" type="text" formControlName="description" placeholder="Optional" />
+      </div>
       <div class="form-actions">
-        <button class="btn btn-primary" type="submit" [disabled]="loading">
-          {{ loading ? 'Saving…' : 'Add question' }}
+        <button class="btn btn-primary" type="submit" [disabled]="categorySaving || categoryForm.invalid">
+          {{ isCategoryEditing ? 'Save category' : 'Add category' }}
+        </button>
+        <button class="btn btn-ghost" type="button" *ngIf="isCategoryEditing" (click)="cancelCategoryEdit()">
+          Cancel
         </button>
       </div>
     </form>
-  </div>
 
-  <div class="card table-card" *ngIf="questions.length">
-    <table>
-      <thead>
-      <tr>
-        <th>Question</th>
-        <th>Category</th>
-        <th>Type</th>
-        <th>Default?</th>
-        <th style="width: 80px;"></th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr *ngFor="let q of questions">
-        <td>{{ q.text }}</td>
-        <td>{{ q.category ? q.category.name : q.categoryId }}</td>
-        <td>{{ q.responseType === 'YES_NO' ? 'Yes/No' : 'Scale 1-5' }}</td>
-        <td>{{ q.custom ? 'No' : 'Yes' }}</td>
-        <td class="actions">
-          <button class="btn btn-ghost" (click)="delete(q)" [disabled]="questions.length <= minRequired || !q.custom">Delete</button>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
+    <div class="alert error" *ngIf="categoryError">{{ categoryError }}</div>
 
-  <div class="empty-state" *ngIf="!questions.length">
-    You have no custom questions yet. Add your first one above.
+    <div class="category-list" *ngIf="categories.length">
+      <div class="category-row" *ngFor="let category of categories">
+        <div>
+          <div class="category-name">{{ category.name }}</div>
+          <div class="muted tiny">{{ category.description || 'No description' }}</div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-ghost tiny" type="button" (click)="startCategoryEdit(category)">Edit</button>
+          <button class="btn btn-ghost tiny" type="button" (click)="deleteCategory(category)">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="!categories.length">
+      No categories yet. Create one to organize your questions.
+    </div>
   </div>
 </div>

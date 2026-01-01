@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { ApiConfigService } from './api-config.service';
 
 export interface JournalEntry {
   id: number;
@@ -15,9 +15,14 @@ export interface JournalCreateRequest {
 
 @Injectable({ providedIn: 'root' })
 export class JournalService {
-  private baseUrl = `${environment.apiUrl}/journal`;
+  private baseUrl: string;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private api: ApiConfigService
+  ) {
+    this.baseUrl = this.api.endpoint('journal');
+  }
 
   create(payload: JournalCreateRequest): Observable<JournalEntry> {
     return this.http.post<JournalEntry>(this.baseUrl, payload);

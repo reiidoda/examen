@@ -67,6 +67,8 @@ class ExaminationSessionServiceImplTest {
         AnswerRequest answerRequest = new AnswerRequest();
         ReflectionTestUtils.setField(answerRequest, "questionId", 100L);
         ReflectionTestUtils.setField(answerRequest, "answerText", "5");
+        ReflectionTestUtils.setField(answerRequest, "reflectionText", "Stayed focused during prayer.");
+        ReflectionTestUtils.setField(answerRequest, "feelingScore", 5);
 
         ExaminationSessionSubmitRequest request = new ExaminationSessionSubmitRequest();
         ReflectionTestUtils.setField(request, "answers", List.of(answerRequest));

@@ -22,15 +22,19 @@ public class PasswordResetToken {
     @Column(nullable = false)
     private LocalDateTime expiresAt;
 
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
     private boolean used;
 
     public PasswordResetToken() {}
 
-    public PasswordResetToken(Long id, String token, User user, LocalDateTime expiresAt, boolean used) {
+    public PasswordResetToken(Long id, String token, User user, LocalDateTime expiresAt, LocalDateTime createdAt, boolean used) {
         this.id = id;
         this.token = token;
         this.user = user;
         this.expiresAt = expiresAt;
+        this.createdAt = createdAt;
         this.used = used;
     }
 
@@ -48,6 +52,9 @@ public class PasswordResetToken {
     public LocalDateTime getExpiresAt() { return expiresAt; }
     public void setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; }
 
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
     public boolean isUsed() { return used; }
     public void setUsed(boolean used) { this.used = used; }
 
@@ -56,16 +63,18 @@ public class PasswordResetToken {
         private String token;
         private User user;
         private LocalDateTime expiresAt;
+        private LocalDateTime createdAt;
         private boolean used;
 
         public Builder id(Long id) { this.id = id; return this; }
         public Builder token(String token) { this.token = token; return this; }
         public Builder user(User user) { this.user = user; return this; }
         public Builder expiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; return this; }
+        public Builder createdAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
         public Builder used(boolean used) { this.used = used; return this; }
 
         public PasswordResetToken build() {
-            return new PasswordResetToken(id, token, user, expiresAt, used);
+            return new PasswordResetToken(id, token, user, expiresAt, createdAt, used);
         }
     }
 }
