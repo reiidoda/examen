@@ -1,0 +1,1 @@
+-- Baseline migration (schema managed by JPA for now)

@@ -1,0 +1,31 @@
+<div class="section-stack">
+  <div class="page-header">
+    <div>
+      <p class="overline">Categories</p>
+      <h1>Create a category</h1>
+      <p class="muted small">Define a new theme to organize your questions.</p>
+    </div>
+    <a class="btn btn-ghost" routerLink="/categories">Back to list</a>
+  </div>
+
+  <div class="card">
+    <form class="form-grid" [formGroup]="form" (ngSubmit)="createCategory()">
+      <div class="form-field">
+        <label for="name">Name</label>
+        <input id="name" type="text" placeholder="Morning reflection" formControlName="name" />
+      </div>
+      <div class="form-field">
+        <label for="description">Description</label>
+        <textarea id="description" rows="3" placeholder="Optional context" formControlName="description"></textarea>
+      </div>
+
+      <div class="alert error" *ngIf="errorMessage">{{ errorMessage }}</div>
+      <div class="form-actions">
+        <button class="btn" type="button" routerLink="/categories">Cancel</button>
+        <button class="btn btn-primary" type="submit" [disabled]="loading">
+          {{ loading ? 'Creating…' : 'Create category' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

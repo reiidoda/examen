@@ -1,0 +1,99 @@
+<div class="section-stack">
+  <div class="page-header" appMotion>
+    <div>
+      <p class="overline">Todos</p>
+      <h1>Today’s priorities</h1>
+      <p class="muted small">Keep your focus items close to your daily examen.</p>
+    </div>
+    <div class="chip-row">
+      <span class="pill">{{ pendingCount }} pending</span>
+      <span class="pill">{{ overdueCount }} overdue</span>
+    </div>
+  </div>
+
+  <section class="todo-guide card" appMotion>
+    <div class="guide-grid">
+      <div>
+        <p class="overline">How it works</p>
+        <h2>Plan, schedule, complete</h2>
+        <p class="muted small">
+          Todos are time-bound tasks with clear due dates. Completed items update your profile
+          metrics and feed weekly summaries.
+        </p>
+      </div>
+      <div class="guide-blocks">
+        <div class="guide-block">
+          <h3>Due time</h3>
+          <p>Set an exact finish time to keep your plan specific.</p>
+        </div>
+        <div class="guide-block">
+          <h3>Status</h3>
+          <p>Completed tasks are recorded in your profile analytics.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="card todo-summary" appMotion>
+    <div class="summary-item">
+      <p class="muted tiny">Total tasks</p>
+      <div class="stat-value">{{ totalCount }}</div>
+    </div>
+    <div class="summary-item">
+      <p class="muted tiny">Pending</p>
+      <div class="stat-value">{{ pendingCount }}</div>
+    </div>
+    <div class="summary-item">
+      <p class="muted tiny">Due today</p>
+      <div class="stat-value">{{ dueTodayCount }}</div>
+    </div>
+    <div class="summary-item">
+      <p class="muted tiny">Overdue</p>
+      <div class="stat-value">{{ overdueCount }}</div>
+    </div>
+  </div>
+
+  <div class="card composer" appMotion>
+    <div>
+      <label class="muted tiny">Title</label>
+      <input type="text" [(ngModel)]="draftTitle" placeholder="Add a todo" />
+    </div>
+    <div>
+      <label class="muted tiny">Due at</label>
+      <input type="datetime-local" [(ngModel)]="draftDueAt" />
+    </div>
+    <button class="btn btn-primary" type="button" (click)="create()">Add</button>
+  </div>
+
+  <div class="alert error" *ngIf="error">{{ error }}</div>
+  <div class="filters">
+    <label class="muted tiny">Filter by due</label>
+    <select [(ngModel)]="filterRange">
+      <option value="all">All</option>
+      <option value="hour">Next hour</option>
+      <option value="day">Today</option>
+      <option value="month">This month</option>
+    </select>
+  </div>
+  <div class="alert" *ngIf="loading">Loading todos…</div>
+
+  <div class="card todo-list" *ngIf="filteredTodos.length" appMotion>
+    <div class="todo-item" *ngFor="let todo of filteredTodos" (click)="toggleDone(todo)" [class.done]="todo.completed">
+      <div class="check" [class.done]="todo.completed">
+        <span *ngIf="todo.completed">&#10003;</span>
+      </div>
+      <div class="todo-content">
+        <div class="title" [class.done]="todo.completed">{{ todo.title }}</div>
+        <div class="muted small">{{ todo.dueAt | date:'medium' }}</div>
+      </div>
+      <div class="tag" [ngClass]="todo.completed ? 'tag-success' : 'tag-muted'">
+        {{ todo.completed ? 'Done' : 'Pending' }}
+      </div>
+      <button class="btn btn-ghost tiny" (click)="remove(todo, $event)">Delete</button>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!filteredTodos.length && !loading">
+    No todos for today. Add a few tasks to stay on track.
+  </div>
+</div>

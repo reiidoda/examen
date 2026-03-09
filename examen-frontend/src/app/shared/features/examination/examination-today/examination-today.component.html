@@ -1,0 +1,269 @@
+<div class="exam-page">
+  <header class="exam-hero card" appMotion>
+    <div class="hero-copy">
+      <p class="overline">Examination of Conscience</p>
+      <h1>Daily examen</h1>
+      <p class="subtitle">
+        AI-curated questions help you reflect with clarity. Start a session, expand each prompt to
+        write your reflection, rate how you felt, and review your progress in the profile summary.
+      </p>
+      <div class="hero-actions">
+        <button
+          class="btn btn-primary"
+          type="button"
+          (click)="startSession()"
+          *ngIf="!activeSession"
+          [disabled]="loading || submitting || !canStartSession"
+        >
+          Start today's examen
+        </button>
+        <button class="btn btn-primary" type="button" (click)="submit()" *ngIf="activeSession" [disabled]="!submitEnabled || submitting">
+          Submit examen
+        </button>
+        <button class="btn btn-ghost" type="button" (click)="scrollToNextUnanswered()" *ngIf="activeSession" [disabled]="!unansweredQuestionId">
+          Jump to next incomplete
+        </button>
+      </div>
+      <div class="status-row">
+        <div class="session-status" [class.active]="activeSession">
+          <span class="dot"></span>
+          {{ activeSession ? 'Session in progress' : 'No active session yet' }}
+        </div>
+        <span class="muted small" *ngIf="cooldownRemaining && !activeSession">
+          Next session available in {{ cooldownRemaining }}.
+        </span>
+        <span class="muted small" *ngIf="!cooldownRemaining">24 hour cooldown after completion.</span>
+      </div>
+    </div>
+    <div class="hero-panel">
+      <p class="overline">Progress</p>
+      <div class="progress-count">
+        <span class="count">{{ answeredCount }}</span>
+        <span class="muted small">of {{ totalQuestions }} answered</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" [style.width.%]="progressPercent"></div></div>
+      <p class="muted tiny" *ngIf="submitEnabled">All questions completed.</p>
+      <div class="hero-meta">
+        <div class="meta-item">
+          <span class="label">Questions</span>
+          <span class="value">{{ totalQuestions }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="label">Feeling</span>
+          <span class="value">{{ sessionMoodScore || '-' }}</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="alert error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="alert success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="alert warn" *ngIf="cooldownMessage">{{ cooldownMessage }}</div>
+
+  <section class="exam-guide card" appMotion>
+    <div class="guide-grid">
+      <div class="guide-copy">
+        <p class="overline">How it works</p>
+        <h2>Daily session flow</h2>
+        <p class="muted small">
+          Each session opens once per day. Expand each prompt to respond, reflect, and rate your
+          feelings, then submit to lock the record and update your analytics.
+        </p>
+        <div class="guide-steps">
+          <div class="guide-step">
+            <span class="step-index">01</span>
+            <div>
+              <h3>Open the session</h3>
+              <p>Sessions are time-stamped and saved to your account.</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <span class="step-index">02</span>
+            <div>
+              <h3>Answer every prompt</h3>
+              <p>Questions expand into a focused space for reflection and feeling ratings.</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <span class="step-index">03</span>
+            <div>
+              <h3>Reflect and rate</h3>
+              <p>Each prompt captures a reflection and a feeling rating.</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <span class="step-index">04</span>
+            <div>
+              <h3>Submit and review</h3>
+              <p>Submitting updates your streak and profile metrics instantly.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="guide-panel">
+        <div class="guide-metric">
+          <span class="label">Cooldown</span>
+          <span class="value">24h</span>
+          <p class="muted tiny">One session per day keeps the cadence consistent.</p>
+        </div>
+        <div class="guide-metric">
+          <span class="label">Response format</span>
+          <span class="value">Reflection + feeling</span>
+          <p class="muted tiny">Each prompt captures a reflection and a feeling rating.</p>
+        </div>
+        <div class="guide-metric">
+          <span class="label">Autosave</span>
+          <span class="value">On</span>
+          <p class="muted tiny">Progress is saved while you answer each question.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="exam-recent card" *ngIf="lastSession" appMotion>
+    <div class="recent-grid">
+      <div>
+        <p class="overline">Last session</p>
+        <h2>{{ lastSession.completedAt ? 'Completed' : 'In progress' }}</h2>
+        <p class="muted small">
+          {{ lastSession.completedAt ? (lastSession.completedAt | date:'medium') : (lastSession.startedAt | date:'medium') }}
+        </p>
+        <p class="muted tiny" *ngIf="lastSession.notes">"{{ lastSession.notes }}"</p>
+      </div>
+      <div class="recent-metrics">
+        <div class="metric">
+          <span class="label">Score</span>
+          <span class="value">
+            {{ lastSession.score != null ? (lastSession.score | number:'1.0-0') + '%' : '-' }}
+          </span>
+        </div>
+        <div class="metric">
+          <span class="label">Feeling</span>
+          <span class="value">{{ lastSession.moodScore || '-' }}</span>
+        </div>
+        <div class="metric">
+          <span class="label">Questions</span>
+          <span class="value">{{ totalQuestions }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="session-panel card" *ngIf="activeSession" appMotion>
+    <div class="panel-grid">
+      <div class="panel-block">
+        <label class="muted tiny">Session note (optional)</label>
+        <textarea
+          rows="4"
+          [ngModel]="notes"
+          (ngModelChange)="onNotesChange($event)"
+          [disabled]="submitting"
+          placeholder="Write a short summary for today"></textarea>
+      </div>
+      <div class="panel-block">
+        <label class="muted tiny">Overall feeling (optional)</label>
+        <div class="mood-picker" role="radiogroup" aria-label="Select feeling">
+          <button
+            *ngFor="let m of moodScale"
+            type="button"
+            [class.selected]="moodScore === m"
+            (click)="setMoodScore(m)"
+            [disabled]="submitting"
+            [attr.aria-checked]="moodScore === m"
+            role="radio"
+          >
+            {{ m }}
+          </button>
+        </div>
+        <p class="muted tiny">Optional. If empty, we use the average feeling rating.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="empty-state" *ngIf="!activeSession">
+    Start an examen session to unlock today's questions and track your answers.
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading questions...</div>
+  <div class="skeletons" *ngIf="loading">
+    <div class="skeleton-card" *ngFor="let s of [1,2,3]">
+      <div class="skeleton-line wide"></div>
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line short"></div>
+    </div>
+  </div>
+
+  <section class="question-grid" [class.disabled]="!activeSession" *ngIf="!loading">
+    <article
+      class="question-card card"
+      *ngFor="let question of questions; trackBy: trackByQuestionId"
+      [attr.id]="'question-' + question.id"
+      [class.completed]="question.status === 'completed'"
+      [class.expanded]="expandedQuestionId === question.id"
+      [attr.aria-expanded]="expandedQuestionId === question.id"
+      tabindex="0"
+      role="button"
+      (click)="expandQuestion(question.id)"
+      (keydown.enter)="expandQuestion(question.id)"
+      (keydown.space)="$event.preventDefault(); expandQuestion(question.id)"
+      appMotion
+    >
+      <div class="card-head">
+        <div>
+          <p class="overline">{{ question.categoryName || 'Reflection' }}</p>
+          <h3>{{ question.text }}</h3>
+          <p class="muted tiny instruction">{{ question.instruction }}</p>
+        </div>
+        <div class="status-chip" [class.done]="question.status === 'completed'">
+          <span class="dot"></span>{{ question.status === 'completed' ? 'Completed' : 'Incomplete' }}
+        </div>
+      </div>
+
+      <div class="question-body" [class.open]="expandedQuestionId === question.id">
+        <div class="reflection-block">
+          <label class="muted tiny">Reflection</label>
+          <textarea
+            rows="3"
+            [ngModel]="question.reflectionText"
+            (ngModelChange)="setReflection(question.id, $event)"
+            [disabled]="submitting"
+            placeholder="Write your reflection for this prompt"></textarea>
+        </div>
+
+        <div class="feeling-block">
+          <label class="muted tiny">Feeling rating</label>
+          <div class="mood-picker">
+            <button
+              *ngFor="let m of feelingScale"
+              type="button"
+              [class.selected]="question.feelingScore === m"
+              (click)="setFeelingScore(question.id, m)"
+              [disabled]="submitting"
+              [attr.aria-checked]="question.feelingScore === m"
+              role="radio"
+            >
+              {{ m }}
+            </button>
+          </div>
+          <p class="muted tiny">Rate how you felt while answering this prompt.</p>
+        </div>
+
+        <div class="question-actions">
+          <button
+            class="btn btn-primary"
+            type="button"
+            (click)="submitQuestion(question)"
+            [disabled]="!activeSession || submitting"
+          >
+            {{ question.status === 'completed' ? 'Update response' : 'Submit response' }}
+          </button>
+          <span class="muted tiny" *ngIf="question.status === 'completed'">Saved</span>
+        </div>
+
+        <p class="validation-message" *ngIf="question.validationMessage">{{ question.validationMessage }}</p>
+      </div>
+    </article>
+  </section>
+
+  <div class="autosave" *ngIf="showAutosave">Saved progress</div>
+</div>

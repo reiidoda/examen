@@ -1,0 +1,34 @@
+<div class="section-stack">
+  <div class="page-header">
+    <div>
+      <p class="overline">Categories</p>
+      <h1>Edit category</h1>
+      <p class="muted small">Update the name or description for this theme.</p>
+    </div>
+    <a class="btn btn-ghost" routerLink="/categories">Back to list</a>
+  </div>
+
+  <div class="alert" *ngIf="loading">Loading category…</div>
+
+  <div class="card" *ngIf="!loading">
+    <form class="form-grid" [formGroup]="form" (ngSubmit)="updateCategory()">
+      <div class="form-field">
+        <label for="name">Name</label>
+        <input id="name" type="text" placeholder="Category name" formControlName="name" />
+      </div>
+      <div class="form-field">
+        <label for="description">Description</label>
+        <textarea id="description" rows="3" placeholder="Optional context" formControlName="description"></textarea>
+      </div>
+
+      <div class="alert error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+      <div class="form-actions">
+        <button class="btn" type="button" routerLink="/categories">Cancel</button>
+        <button class="btn btn-primary" type="submit" [disabled]="loading">
+          {{ loading ? 'Saving…' : 'Save changes' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

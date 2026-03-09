@@ -1,0 +1,111 @@
+<div class="section-stack dashboard">
+  <div class="alert" *ngIf="loading">Loading your dashboard...</div>
+
+  <section class="dashboard-hero card" *ngIf="!loading" appMotion>
+    <div class="hero-copy">
+      <p class="overline">Today</p>
+      <h1>Examination of Conscience</h1>
+      <p class="muted small">
+        A guided daily examen with AI-curated prompts, custom questions, and a calm space to
+        track spiritual growth.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" routerLink="/examination">
+          {{ activeSession ? 'Continue examen' : "Start today's examen" }}
+        </a>
+        <a class="btn btn-ghost" routerLink="/questions">Manage questions</a>
+      </div>
+      <div class="hero-meta">
+        <span class="pill">{{ todayStatus }}</span>
+        <span class="muted small">Feeling {{ feelingDisplay }}</span>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <p class="muted tiny">Spiritual progress</p>
+        <div class="stat-value">
+          {{ summary?.spiritualProgressScore != null ? (summary?.spiritualProgressScore | number:'1.0-0') + '%' : '-' }}
+        </div>
+      </div>
+      <div class="stat">
+        <p class="muted tiny">Streak</p>
+        <div class="stat-value">{{ summary?.streakDays || 0 }} days</div>
+      </div>
+      <div class="stat">
+        <p class="muted tiny">Sessions this week</p>
+        <div class="stat-value">{{ summary?.sessionsThisWeek || 0 }}</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="dashboard-grid" *ngIf="!loading">
+    <div class="card metric-card" appMotion>
+      <p class="overline">Examinations</p>
+      <div class="stat-value">{{ summary?.examinationsCompleted || 0 }}</div>
+      <p class="muted tiny">Completed in the last 30 days.</p>
+    </div>
+    <div class="card metric-card" appMotion>
+      <p class="overline">Todos</p>
+      <div class="stat-value">{{ summary?.todosCompleted || 0 }}</div>
+      <p class="muted tiny">Tasks completed recently.</p>
+    </div>
+    <div class="card metric-card" appMotion>
+      <p class="overline">Categories</p>
+      <div class="stat-value">{{ summary?.categoriesUsed || 0 }}</div>
+      <p class="muted tiny">Themes used this month.</p>
+    </div>
+  </section>
+
+  <section class="dashboard-split" *ngIf="!loading">
+    <div class="card todo-card" appMotion>
+      <div class="card-header">
+        <div>
+          <p class="overline">Todos</p>
+          <h2>Upcoming focus</h2>
+          <p class="muted tiny">{{ overdueCount }} overdue</p>
+        </div>
+        <a class="btn btn-ghost" routerLink="/todos">Open todos</a>
+      </div>
+      <div class="todo-list" *ngIf="upcomingTodos.length">
+        <div class="todo-row" *ngFor="let todo of upcomingTodos">
+          <div>
+            <div class="todo-title">{{ todo.title }}</div>
+            <div class="muted tiny">{{ todo.dueAt | date:'medium' }}</div>
+          </div>
+          <span class="tag tag-muted">Pending</span>
+        </div>
+      </div>
+      <div class="empty-state" *ngIf="!upcomingTodos.length">
+        No pending todos. Add a task to stay intentional.
+      </div>
+    </div>
+
+    <div class="card library-card" appMotion>
+      <div class="card-header">
+        <div>
+          <p class="overline">Library</p>
+          <h2>Questions and categories</h2>
+          <p class="muted tiny">AI prompts plus your custom library.</p>
+        </div>
+        <a class="btn btn-ghost" routerLink="/questions">Manage library</a>
+      </div>
+      <div class="library-counts">
+        <div class="count-row">
+          <span>AI prompts</span>
+          <strong>{{ aiQuestionCount }}</strong>
+        </div>
+        <div class="count-row">
+          <span>Custom questions</span>
+          <strong>{{ customQuestionCount }}</strong>
+        </div>
+        <div class="count-row">
+          <span>Categories</span>
+          <strong>{{ categoryCount }}</strong>
+        </div>
+      </div>
+      <div class="library-actions">
+        <a class="btn btn-primary" routerLink="/questions">Add a question</a>
+      </div>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,32 @@
+# OS cruft
+.DS_Store
+
+# Editor/IDE
+.vscode/
+.idea/
+
+# Node/Angular
+node_modules/
+examen-frontend/node_modules/
+examen-frontend/dist/
+examen-frontend/.angular/
+examen-frontend/test-results/
+examen-frontend/playwright-report/
+npm-debug.log*
+yarn-error.log*
+
+# Java/Gradle
+examen-backend/.gradle/
+examen-backend/build/
+examen-backend/out/
+examen-backend/bin/
+
+# Environment / secrets
+.env
+.env.*
+*.env
+*.local
+*.log
+
+# Certs
+deploy/certs/

@@ -1,0 +1,33 @@
+.auth-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-xl);
+  align-items: start;
+  padding: var(--space-xl) 0;
+}
+
+.auth-hero {
+  max-width: 520px;
+}
+
+.auth-hero h1 {
+  margin: 0 0 var(--space-sm);
+  font-size: clamp(30px, 4vw, 42px);
+  line-height: 1.2;
+}
+
+.auth-card {
+  padding: clamp(20px, 3vw, 32px);
+}
+
+.auth-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.helper {
+  margin: 10px 0 0;
+}

@@ -1,0 +1,191 @@
+<div class="landing">
+  <section class="hero reveal-on-scroll" #reveal #heroSection>
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <p class="eyebrow">Examination of Conscience</p>
+        <h1 class="hero-headline" aria-label="{{ heroHeadline }}">
+          <span class="typing-text" aria-hidden="true"><ng-container *ngFor="let char of heroHeadlineChars | slice:0:typedCount"><span class="typing-char">{{ char }}</span></ng-container></span>
+          <span class="typing-cursor" aria-hidden="true"></span>
+        </h1>
+        <p class="hero-subhead">
+          A guided daily examen built for clarity and consistency. Start a session, answer
+          AI-curated prompts (or your own), and watch your spiritual progress update in real time.
+        </p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary" href="#overview">Learn more</a>
+          <a class="btn btn-ghost" routerLink="/auth/register">Register</a>
+        </div>
+        <div class="hero-meta">
+          <span class="pill subtle">Daily session flow</span>
+          <span class="meta">Custom questions</span>
+          <span class="meta">Private by design</span>
+        </div>
+      </div>
+      <div class="hero-visual" #heroVisual>
+        <div class="device-shell">
+          <img src="/examen.png" alt="Examen interface preview" class="device-screen" />
+          <div class="device-reflection"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="overview" class="chapter chapter-muted reveal-on-scroll" #reveal>
+    <div class="section-inner">
+      <div class="chapter-copy">
+        <p class="eyebrow">How it works</p>
+        <h2>Your daily examen, mapped clearly.</h2>
+        <p class="chapter-text">
+          Each day is a focused flow: start a session, answer prompts by category, add a short note
+          and feeling rating, then submit to update your profile summary and trend insights.
+        </p>
+      </div>
+      <div class="flow-grid">
+        <article class="flow-card">
+          <span class="flow-step">Step 01</span>
+          <h3>Start a session</h3>
+          <p>Open one session every 24 hours to keep the rhythm steady.</p>
+          <ul>
+            <li>Timestamped and tied to your account</li>
+            <li>Autosaves progress while you answer</li>
+          </ul>
+        </article>
+        <article class="flow-card">
+          <span class="flow-step">Step 02</span>
+          <h3>Answer prompts</h3>
+          <p>Respond to yes/no or scale prompts grouped by category.</p>
+          <ul>
+            <li>AI library plus your custom questions</li>
+            <li>Jump to the next incomplete prompt</li>
+          </ul>
+        </article>
+        <article class="flow-card">
+          <span class="flow-step">Step 03</span>
+          <h3>Reflect and rate</h3>
+          <p>Add a short reflection and optional feeling rating.</p>
+          <ul>
+            <li>Notes stay attached to the session</li>
+            <li>Feeling feeds your weekly trend</li>
+          </ul>
+        </article>
+        <article class="flow-card">
+          <span class="flow-step">Step 04</span>
+          <h3>Submit and review</h3>
+          <p>Submission updates your streak, score, and category insights.</p>
+          <ul>
+            <li>Profile analytics refresh instantly</li>
+            <li>Weekly summaries stay in sync</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="chapters" class="chapter reveal-on-scroll" #reveal>
+    <div class="section-inner sticky-grid">
+      <div class="sticky-media">
+        <div class="device-shell alt">
+          <img src="/examen.png" alt="Examen layout detail" class="device-screen" />
+          <div class="device-reflection"></div>
+        </div>
+      </div>
+      <div class="sticky-steps">
+        <article class="sticky-step reveal-on-scroll" #reveal>
+          <p class="eyebrow">Module 01</p>
+          <h3>Examination</h3>
+          <p>Daily guided session with categories, notes, feeling, and scoring.</p>
+        </article>
+        <article class="sticky-step reveal-on-scroll" #reveal>
+          <p class="eyebrow">Module 02</p>
+          <h3>Questions</h3>
+          <p>Curated AI library plus custom questions you can edit or remove.</p>
+        </article>
+        <article class="sticky-step reveal-on-scroll" #reveal>
+          <p class="eyebrow">Module 03</p>
+          <h3>Todos</h3>
+          <p>Task list with due time, completion tracking, and filters.</p>
+        </article>
+        <article class="sticky-step reveal-on-scroll" #reveal>
+          <p class="eyebrow">Module 04</p>
+          <h3>Journal</h3>
+          <p>Quick reflection notes with recent history and autosave.</p>
+        </article>
+        <article class="sticky-step reveal-on-scroll" #reveal>
+          <p class="eyebrow">Module 05</p>
+          <h3>Profile</h3>
+          <p>Streaks, feeling trends, category breakdowns, and growth insights.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="motion" class="chapter chapter-dark reveal-on-scroll" #reveal>
+    <div class="section-inner">
+      <div class="chapter-copy">
+        <p class="eyebrow">Insights</p>
+        <h2>Professional summaries that stay human.</h2>
+        <p class="chapter-text">
+          Your profile connects sessions, todos, and habits into a single picture. Weekly summaries
+          and growth prompts keep the focus on what matters next.
+        </p>
+      </div>
+      <div class="motion-demo reveal-on-scroll" #reveal aria-label="Profile insight preview">
+        <div class="motion-card card-1">
+          <div class="motion-pill">Weekly summary</div>
+          <div class="motion-line"></div>
+          <div class="motion-line short"></div>
+        </div>
+        <div class="motion-card card-2">
+          <div class="motion-pill">Gratitude</div>
+          <div class="motion-line"></div>
+          <div class="motion-line short"></div>
+        </div>
+        <div class="motion-card card-3">
+          <div class="motion-pill">Habit score</div>
+          <div class="motion-line"></div>
+          <div class="motion-line short"></div>
+        </div>
+        <div class="motion-glow"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" class="chapter chapter-muted reveal-on-scroll" #reveal>
+    <div class="section-inner">
+      <div class="pricing-card">
+        <p class="eyebrow">Trust</p>
+        <h2>Private, secure, and consistent.</h2>
+        <p class="chapter-text">
+          Your data stays with your account. Sessions, questions, todos, and journal entries are
+          saved securely and reflected in your profile analytics.
+        </p>
+        <div class="trust-grid">
+          <div class="trust-item">JWT-secured sessions</div>
+          <div class="trust-item">Timezone-aware reminders</div>
+          <div class="trust-item">Exportable weekly summaries</div>
+          <div class="trust-item">Cross-device access</div>
+        </div>
+        <div class="hero-ctas">
+          <a class="btn btn-primary" routerLink="/auth/register">Register</a>
+          <a class="btn btn-ghost" routerLink="/auth/login">Sign in</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section reveal-on-scroll" #reveal>
+    <div class="section-inner">
+      <div class="cta-card">
+        <div>
+          <p class="eyebrow">Ready</p>
+          <h2>Begin today.</h2>
+          <p class="chapter-text">A calm, structured space for daily examination and growth.</p>
+        </div>
+        <div class="hero-ctas">
+          <a class="btn btn-primary" routerLink="/auth/register">Register</a>
+          <a class="btn btn-ghost" href="#overview">Learn more</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

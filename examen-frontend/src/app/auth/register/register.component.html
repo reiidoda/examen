@@ -1,0 +1,71 @@
+<section class="auth-layout">
+  <div class="auth-hero">
+    <p class="pill">Create account</p>
+    <h1>Design a calmer workflow for your daily examen.</h1>
+    <p class="muted">
+      Combine reflection, todos, and category tracking in one place. Start with a lightweight setup
+      and evolve as you go.
+    </p>
+    <div class="chip-row">
+      <span class="pill">Wellbeing-first</span>
+      <span class="pill">Structured notes</span>
+      <span class="pill">Actionable insights</span>
+    </div>
+  </div>
+
+  <div class="auth-card card">
+    <div class="auth-header">
+      <div>
+        <p class="overline">Register</p>
+        <h2>Join Examen</h2>
+        <p class="muted small">It only takes a minute to get started.</p>
+      </div>
+      <a routerLink="/auth/login" class="btn btn-ghost">Back to login</a>
+    </div>
+
+    <form class="form-grid" [formGroup]="registerForm" (ngSubmit)="register()">
+    <div class="form-field">
+      <label for="firstname">First name</label>
+      <input id="firstname" type="text" placeholder="Ada" formControlName="firstname" />
+      <div class="alert error" *ngIf="firstNameCtrl?.invalid && firstNameCtrl?.touched">First name is required.</div>
+    </div>
+    <div class="form-field">
+      <label for="lastname">Last name</label>
+      <input id="lastname" type="text" placeholder="Lovelace" formControlName="lastname" />
+      <div class="alert error" *ngIf="lastNameCtrl?.invalid && lastNameCtrl?.touched">Last name is required.</div>
+    </div>
+    <div class="form-field">
+      <label for="email">Email</label>
+      <input id="email" type="email" placeholder="you@example.com" formControlName="email" />
+      <div class="alert error" *ngIf="emailCtrl?.invalid && emailCtrl?.touched">Enter a valid email.</div>
+    </div>
+    <div class="form-field">
+      <label for="password">Password</label>
+      <input id="password" type="password" placeholder="••••••••" formControlName="password" />
+      <p class="muted tiny">At least 8 characters, with uppercase, lowercase, number, and symbol.</p>
+        <div class="alert error" *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+          Password must include upper, lower, number, and symbol.
+        </div>
+    </div>
+    <div class="form-field">
+      <label for="confirm">Confirm password</label>
+      <input id="confirm" type="password" placeholder="Repeat password" formControlName="confirmPassword" />
+      <div class="alert error" *ngIf="registerForm.get('confirmPassword')?.touched && registerForm.value.password !== registerForm.value.confirmPassword">
+        Passwords do not match.
+      </div>
+    </div>
+
+      <div class="alert success" *ngIf="successMessage">{{ successMessage }}</div>
+      <div class="alert error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+      <button class="btn btn-primary" type="submit" [disabled]="loading || registerForm.invalid">
+        {{ loading ? 'Creating account…' : 'Create account' }}
+      </button>
+    </form>
+
+    <p class="muted small helper">
+      Already registered?
+      <a routerLink="/auth/login">Sign in instead</a>.
+    </p>
+  </div>
+</section>

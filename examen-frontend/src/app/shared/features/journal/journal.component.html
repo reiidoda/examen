@@ -1,0 +1,62 @@
+<div class="section-stack">
+  <div class="page-header" appMotion>
+    <div>
+      <p class="overline">Journal</p>
+      <h1>Capture your reflections</h1>
+      <p class="muted small">Quick notes for the day. Autosaves the latest 20 entries.</p>
+    </div>
+  </div>
+
+  <section class="journal-guide card" appMotion>
+    <div class="guide-grid">
+      <div>
+        <p class="overline">How it works</p>
+        <h2>Short daily reflections</h2>
+        <p class="muted small">
+          Journal entries are separate from examination sessions. Use them to capture insights or
+          moments you want to revisit later.
+        </p>
+      </div>
+      <div class="guide-blocks">
+        <div class="guide-block">
+          <h3>Autosave</h3>
+          <p>New entries are saved to your account and appear immediately.</p>
+        </div>
+        <div class="guide-block">
+          <h3>History</h3>
+          <p>The latest 20 entries stay visible for quick review.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="card" appMotion>
+    <label for="entry">New entry</label>
+    <textarea
+      id="entry"
+      [(ngModel)]="content"
+      rows="4"
+      placeholder="What did you learn or feel today?"
+    ></textarea>
+    <div class="alert error" *ngIf="error">{{ error }}</div>
+    <div class="form-actions">
+      <button class="btn btn-primary" (click)="save()" [disabled]="loading">
+        {{ loading ? 'Saving…' : 'Save entry' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="card" *ngIf="entries.length" appMotion>
+    <p class="overline">Recent entries</p>
+    <div class="entry-list">
+      <div class="entry" *ngFor="let e of entries">
+        <div class="entry-date">{{ e.createdAt | date:'medium' }}</div>
+        <div class="entry-content">{{ e.content }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!entries.length">
+    No journal entries yet. Start by writing a quick reflection above.
+  </div>
+</div>
