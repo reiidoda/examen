@@ -101,6 +101,7 @@ scripts/          # db-backup.sh, db-restore.sh
 - AI and research
   - [AI and Data Science Strategy](Docs/AI_ML_DATA_SCIENCE.md)
   - [Reference Manuals](Docs/REFERENCE_MANUALS.md)
+  - [SEO Growth Plan (Google and GitHub)](Docs/SEO_GROWTH_PLAN.md)
 
 ## Prerequisites
 - JDK 25+
@@ -183,6 +184,7 @@ Define these in `.env.local` (git ignored). See `.env.example` for defaults.
 | SPRING_DATASOURCE_PASSWORD | JDBC password |
 | APP_JWT_SECRET | JWT signing secret (HS256) |
 | API_URL | Frontend SSR API base |
+| APP_PUBLIC_URL | Canonical public URL used for sitemap/canonical SEO tags (e.g. `https://yourdomain.com`) |
 | APP_PASSWORD_RESET_URL | Frontend reset page URL |
 | APP_PASSWORD_RESET_FROM | Email "from" address for reset mail |
 | APP_PASSWORD_RESET_MAX_REQUESTS | Max reset requests per window |
@@ -221,6 +223,13 @@ Define these in `.env.local` (git ignored). See `.env.example` for defaults.
 ## Scripts
 - `scripts/db-backup.sh`
 - `scripts/db-restore.sh`
+
+## SEO build note
+- Set `APP_PUBLIC_URL` before build to generate correct `robots.txt`, `sitemap.xml`, and canonical metadata:
+```
+cd examen-frontend
+APP_PUBLIC_URL=https://yourdomain.com npm run build
+```
 
 ## Notes
 - Flyway migrations live under `examen-backend/src/main/resources/db/migration`.

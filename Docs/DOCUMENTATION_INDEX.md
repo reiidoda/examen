@@ -31,6 +31,7 @@ This folder contains enterprise-level design and engineering documentation for E
 ## AI and Research
 - [AI, ML, Deep Learning, NLP, Neuroscience, and Data Science](AI_ML_DATA_SCIENCE.md)
 - [Reference Manuals](REFERENCE_MANUALS.md)
+- [SEO Growth Plan (Google and GitHub)](SEO_GROWTH_PLAN.md)
 
 ## Governance
 - [Code of Conduct](../CODE_OF_CONDUCT.md)
