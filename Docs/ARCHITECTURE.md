@@ -1,46 +1,57 @@
-# Architecture Overview
+# Architecture
 
-## Purpose
-Examen is a reflective practice platform for daily examination of conscience.
-It supports guided sessions, custom questions, personal analytics, reminders, journaling, gratitude, habits, and todo management.
+## Current Architecture
+- Frontend: Angular SSR application.
+- Backend: Spring Boot API with modular domain services.
+- Persistence: PostgreSQL with Flyway migrations.
+- Integration: SMTP for reset and reminder email.
 
-## High-Level Architecture
-- Frontend: Angular 21 (SSR-capable)
-- Backend: Spring Boot 4 REST API (Java 25)
-- Database: PostgreSQL 15
-- Tooling/Ops: Docker Compose, Flyway, Swagger, Actuator
-
+## Target Enterprise Architecture
 ```mermaid
-graph LR
-  U[Browser] --> F[Angular App / SSR]
-  F -->|/api| B[Spring Boot API]
-  B --> D[(PostgreSQL)]
-  B --> M[Mail Provider (SMTP)]
-  B --> N[Scheduled Reminder Jobs]
+flowchart TB
+  Client[Web and Mobile Client]
+  CDN[CDN and Edge Cache]
+  APIGW[API Gateway]
+  AuthSVC[Identity Service]
+  SessionSVC[Session Service]
+  CatalogSVC[Catalog Service]
+  ProfileSVC[Profile and Analytics Service]
+  GrowthSVC[Growth Service]
+  NotifySVC[Notification Service]
+  InsightSVC[Insights Service]
+  Bus[Event Bus]
+
+  Client --> CDN --> APIGW
+  APIGW --> AuthSVC
+  APIGW --> SessionSVC
+  APIGW --> CatalogSVC
+  APIGW --> ProfileSVC
+  APIGW --> GrowthSVC
+  APIGW --> NotifySVC
+  APIGW --> InsightSVC
+
+  SessionSVC --> Bus
+  CatalogSVC --> Bus
+  GrowthSVC --> Bus
+  NotifySVC --> Bus
+  ProfileSVC --> Bus
+  InsightSVC --> Bus
 ```
 
-## Layered Backend Structure
-- `controller`: HTTP entry points and response contracts.
-- `service` + `service/impl`: business orchestration and domain rules.
-- `repository`: persistence abstraction via Spring Data JPA.
-- `model`: JPA entities and domain state.
-- `dto`: request/response contracts.
-- `config`: security, JWT, CORS, seeding, typed properties.
+## Architectural Principles
+- Clear bounded contexts with strict ownership.
+- Database-per-context for independent evolution.
+- Event-first integration for cross-context workflows.
+- API contracts versioned and backward compatible.
+- Observability as default: logs, metrics, traces, and SLO alerts.
 
-## Frontend Structure
-- `auth`: login/register/reset password.
-- `shared/features/examination`: session workflow and answering UI.
-- `shared/features/profile`: analytics, progress, growth metrics.
-- `shared/features/todos`, `journal`, `questions`: personal tooling.
-- `core/services`: API integration, auth/token and app-level utilities.
+## Reliability and Availability
+- Active health checks and readiness gates.
+- Graceful degradation for non-critical dependencies.
+- Retry policies for transient external failures.
+- Backup and restore strategy validated in drills.
 
-## Runtime Qualities
-- Stateless backend authentication via JWT.
-- Persistence-backed session and analytics history.
-- Defensive scheduling for reminders by timezone.
-- Production packaging via Docker images and Compose stacks.
-
-## Current Tradeoffs
-- Simple layered architecture accelerates iteration but requires discipline to avoid business logic in controllers.
-- JPA + direct repositories are productive, but complex analytics may eventually benefit from dedicated query/read-model services.
-- SSR improves perceived performance and SEO, at the cost of additional runtime complexity.
+## Security Model
+- JWT-based authentication and role-based authorization.
+- Rate limiting and abuse detection at edge and API layers.
+- Defense-in-depth controls for API and data-plane traffic.

@@ -62,14 +62,37 @@ scripts/          # db-backup.sh, db-restore.sh
 ```
 
 ## Project documentation
+- Full index
+  - [Documentation Index](Docs/DOCUMENTATION_INDEX.md)
 - Governance
   - [Code of Conduct](CODE_OF_CONDUCT.md)
   - [Contributing Guide](CONTRIBUTING.md)
-- Design and architecture
-  - [Architecture Overview](Docs/ARCHITECTURE.md)
+- Core design
+  - [High-Level Design](Docs/HIGH_LEVEL_DESIGN.md)
+  - [Low-Level Design](Docs/LOW_LEVEL_DESIGN.md)
+  - [Architecture](Docs/ARCHITECTURE.md)
   - [System Design](Docs/SYSTEM_DESIGN.md)
+  - [Project Structure](Docs/PROJECT_STRUCTURE.md)
   - [OO Design](Docs/OO_DESIGN.md)
+  - [Software Design](Docs/SOFTWARE_DESIGN.md)
+  - [Design Principles](Docs/DESIGN_PRINCIPLES.md)
   - [Design Patterns](Docs/DESIGN_PATTERNS.md)
+  - [UML](Docs/UML.md)
+- Engineering and quality
+  - [Roadmap](Docs/ROADMAP.md)
+  - [Testing Strategy](Docs/TESTING_STRATEGY.md)
+  - [Software Requirements](Docs/SOFTWARE_REQUIREMENTS.md)
+  - [Software Metrics](Docs/SOFTWARE_METRICS.md)
+  - [Software Configuration Management](Docs/SOFTWARE_CONFIGURATION_MANAGEMENT.md)
+  - [Software Quality](Docs/SOFTWARE_QUALITY.md)
+  - [Software Maintenance](Docs/SOFTWARE_MAINTENANCE.md)
+- Platform and data
+  - [Database Strategy and Design](Docs/DATABASE_STRATEGY.md)
+  - [API Design and Security](Docs/API_DESIGN_SECURITY.md)
+  - [Distributed System Design](Docs/DISTRIBUTED_SYSTEM_DESIGN.md)
+- AI and research
+  - [AI and Data Science Strategy](Docs/AI_ML_DATA_SCIENCE.md)
+  - [Reference Manuals](Docs/REFERENCE_MANUALS.md)
 
 ## Prerequisites
 - JDK 25+

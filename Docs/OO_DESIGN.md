@@ -1,40 +1,29 @@
 # Object-Oriented Design
 
-## Domain Model Highlights
-- `User` is the identity root for all user-owned data.
-- `ExaminationSession` models a bounded daily reflection event.
-- `Answer` belongs to a session and references one `Question`.
-- `DailyExamination` is a day-granularity aggregate snapshot.
-- `Question` belongs to a `Category` and may be default or custom.
+## Design Goals
+- Keep domain rules explicit and centralized.
+- Minimize coupling between transport and domain models.
+- Maintain testability through dependency inversion.
 
-## Responsibility Partitioning
-- Entities (`model/*`) hold domain state and relationships.
-- Services (`service/*`) enforce business rules and workflows.
-- Repositories (`repository/*`) provide persistence contracts.
-- DTOs (`dto/*`) isolate transport concerns from domain entities.
+## Core Aggregates
+- `User`: owner aggregate for user-scoped entities.
+- `ExaminationSession`: lifecycle aggregate for daily reflection.
+- `Question` and `Category`: catalog aggregate.
+- `UserSettings`: policy aggregate for reminders and preferences.
 
-## Encapsulation Decisions
-- Business constraints are centralized in services (e.g., cooldown rules, ownership checks).
-- API contracts do not expose entity graphs directly; they map to DTOs.
-- Typed exceptions (`ApiException`) isolate domain/business errors from generic runtime failures.
+## OO Principles Applied
+- Single responsibility: controllers only orchestrate request-response behavior.
+- Open/closed: strategy abstractions for pluggable insight providers.
+- Liskov substitution: interfaces used for service contracts.
+- Interface segregation: narrow repository and client interfaces.
+- Dependency inversion: core services depend on abstractions.
 
-## Aggregates and Invariants
-- `ExaminationSession`
-  - belongs to one user.
-  - can be active or completed.
-  - answers are immutable history after completion (operationally treated as such).
-- `UserSettings`
-  - one-to-one with `User`.
-  - controls reminder channels and time configuration.
-- `DailyExamination`
-  - unique by `(user, examDate)`.
-  - serves as analytics-friendly daily rollup.
+## Collaboration Contracts
+- Service-to-repository interactions remain transactional.
+- DTO mapping boundaries prevent accidental domain exposure.
+- Validation and authorization are explicit preconditions.
 
-## Composition and Collaboration
-- Controllers compose service calls and HTTP semantics.
-- Services collaborate with repositories and cross-service helpers.
-- Scheduler collaborates with settings repository, mail service, and notification service.
-
-## Testing Strategy (OO perspective)
-- Unit tests validate service invariants and failure modes.
-- Integration tests verify end-to-end behavior across web/security/persistence boundaries.
+## Refactoring Guidance
+- Extract domain services when behavior appears in multiple service classes.
+- Keep aggregate invariants enforced in one place.
+- Avoid utility classes that hide business meaning.

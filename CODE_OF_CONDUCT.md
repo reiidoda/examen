@@ -33,5 +33,10 @@ Report abusive, harassing, or otherwise unacceptable behavior to the maintainers
 
 All complaints will be reviewed and investigated promptly and fairly.
 
+## Response Expectations
+- Initial acknowledgment target: within 72 hours.
+- Investigation updates: provided as material progress occurs.
+- Enforcement outcomes: communicated to involved parties with privacy considerations.
+
 ## Attribution
 This Code of Conduct is adapted from the [Contributor Covenant](https://www.contributor-covenant.org), version 2.1.
