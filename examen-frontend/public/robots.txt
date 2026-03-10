@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Replace with your production domain sitemap when deployed.
+Sitemap: https://github.com/reiidoda/examen

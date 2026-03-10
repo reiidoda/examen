@@ -2,6 +2,8 @@
 [![License](https://img.shields.io/github/license/reiidoda/examen?label=license)](LICENSE)
 [![Angular](https://img.shields.io/badge/angular-21-DD0031?logo=angular&logoColor=white)](https://angular.dev) [![Spring Boot](https://img.shields.io/badge/spring%20boot-4.0.0-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot) [![Java](https://img.shields.io/badge/java-25-007396?logo=openjdk&logoColor=white)](https://openjdk.org) [![Node.js](https://img.shields.io/badge/node-20-339933?logo=node.js&logoColor=white)](https://nodejs.org) [![PostgreSQL](https://img.shields.io/badge/postgresql-15-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org) [![Docker](https://img.shields.io/badge/docker-2496ED?logo=docker&logoColor=white)](https://www.docker.com)
 
+Open-source fullstack reflective journal and examination of conscience platform built with Angular, Spring Boot, and PostgreSQL.
+
 ![Examen](/Docs/examen.png)
 
 ## Product summary
@@ -12,6 +14,11 @@ track habits and gratitude, keep a journal, and manage todos alongside the exami
 
 The system is delivered as an Angular SSR web app backed by a Spring Boot API and PostgreSQL database,
 with Docker-based tooling for local development and production deployments.
+
+## Discoverability keywords
+`examination of conscience app`, `reflective journaling platform`, `daily reflection app`,
+`spiritual habit tracker`, `angular spring boot fullstack`, `ai reflection insights`,
+`open-source journaling software`, `wellbeing analytics platform`, `secure REST API`.
 
 ## Key features
 - Authentication and account safety: JWT-based login/register and password reset with email delivery and rate limiting.
@@ -67,6 +74,7 @@ scripts/          # db-backup.sh, db-restore.sh
 - Governance
   - [Code of Conduct](CODE_OF_CONDUCT.md)
   - [Contributing Guide](CONTRIBUTING.md)
+  - [Security Policy](SECURITY.md)
 - Core design
   - [High-Level Design](Docs/HIGH_LEVEL_DESIGN.md)
   - [Low-Level Design](Docs/LOW_LEVEL_DESIGN.md)
