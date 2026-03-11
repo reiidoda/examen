@@ -88,6 +88,7 @@ scripts/          # db-backup.sh, db-restore.sh
   - [UML](Docs/UML.md)
 - Engineering and quality
   - [Roadmap](Docs/ROADMAP.md)
+  - [Milestones and Issues](Docs/MILESTONES_AND_ISSUES.md)
   - [Testing Strategy](Docs/TESTING_STRATEGY.md)
   - [Software Requirements](Docs/SOFTWARE_REQUIREMENTS.md)
   - [Software Metrics](Docs/SOFTWARE_METRICS.md)

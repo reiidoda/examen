@@ -16,6 +16,7 @@ This folder contains enterprise-level design and engineering documentation for E
 
 ## Delivery and Quality
 - [Roadmap](ROADMAP.md)
+- [Milestones and Issues](MILESTONES_AND_ISSUES.md)
 - [Testing Strategy](TESTING_STRATEGY.md)
 - [Software Requirements](SOFTWARE_REQUIREMENTS.md)
 - [Software Metrics](SOFTWARE_METRICS.md)
